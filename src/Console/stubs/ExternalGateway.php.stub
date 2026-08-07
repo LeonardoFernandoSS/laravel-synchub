@@ -1,0 +1,10 @@
+<?php
+
+namespace {{ namespace }};
+
+use Synchub\LaravelSynchub\Domain\Sync\Contracts\ExternalEntityGateway;
+
+class {{ name }}ExternalGateway implements ExternalEntityGateway
+{
+
+}

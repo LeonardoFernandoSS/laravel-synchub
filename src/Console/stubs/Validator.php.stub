@@ -1,0 +1,10 @@
+<?php
+
+namespace {{ namespace }};
+
+use Synchub\LaravelSynchub\Domain\Sync\Contracts\ContextValidator;
+
+class {{ name }}Validator implements ContextValidator
+{
+    public function validate(array $data): void {}
+}

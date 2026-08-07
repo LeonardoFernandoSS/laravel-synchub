@@ -1,0 +1,13 @@
+<?php
+
+namespace {{ namespace }};
+
+use Synchub\LaravelSynchub\Domain\Sync\Contracts\DependencyChecker;
+
+class {{ name }}DependencyChecker implements DependencyChecker
+{
+    public function check(array $data): array
+    {
+        return [];
+    }
+}

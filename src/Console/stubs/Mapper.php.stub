@@ -1,0 +1,25 @@
+<?php
+
+namespace {{ namespace }};
+
+use Synchub\LaravelSynchub\Domain\Sync\Contracts\ContextMapper;
+use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncData;
+
+class {{ name }}Mapper extends ContextMapper
+{
+    public function map(array $data): SyncData
+    {
+        $target = 'target';
+
+        $payload = [];
+
+        return new SyncData(
+            $target,
+            $payload,
+            hash: $this->hash([
+                'target' => $target,
+                'payload' => $payload
+            ])
+        );
+    }
+}

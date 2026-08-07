@@ -1,0 +1,21 @@
+{
+    "name": "synchub/laravel-synchub",
+    "description": "Synchronization infrastructure for Laravel applications",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Synchub\\LaravelSynchub\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Synchub\\LaravelSynchub\\Infrastructure\\Providers\\LaravelSynchubServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "laravel/framework": "^11.0|^12.0"
+    }
+}
