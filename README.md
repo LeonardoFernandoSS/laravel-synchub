@@ -73,4 +73,4 @@ To contribute to Laravel Synchub, please follow these steps:
 Laravel Synchub is licensed under the MIT License.
 
 ## 📬 Contact
-For more information about Laravel Synchub, please contact us at [support@laravelsynchub.com](mailto:support@laravelsynchub.com).
+For more information about Laravel Synchub, please contact us at [support@laravelsynchub.com](mailto:leonardo.fernando06@gmail.com).
