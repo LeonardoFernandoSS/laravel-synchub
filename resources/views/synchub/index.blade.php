@@ -225,16 +225,16 @@
                 {{-- ID da entidade --}}
                 <div class="lg:col-span-2">
                     <label
-                        for="entity_id"
+                        for="source_id"
                         class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
                         ID da entidade
                     </label>
 
                     <input
                         type="number"
-                        id="entity_id"
-                        name="entity_id"
-                        value="{{ $entityId }}"
+                        id="source_id"
+                        name="source_id"
+                        value="{{ $sourceId }}"
                         min="1"
                         placeholder="Ex.: 123"
                         class="w-full rounded-lg border border-slate-200 dark:border-slate-700
@@ -258,7 +258,7 @@
                         Filtrar
                     </button>
 
-                    @if($status || $context || $step || $entityId)
+                    @if($status || $context || $step || $sourceId)
 
                         <a
                             href="{{ route('synchub.index') }}"
@@ -340,7 +340,7 @@
                                     <span class="text-slate-300 dark:text-slate-600">
                                         ·
                                     </span>
-                                    ID: {{ $process->entity_id }}
+                                    ID: {{ $process->source_id }}
                                 </div>
                             </td>
 

@@ -38,7 +38,7 @@ final class ProcessLifecycleService
             [
                 'sync_process_id' => $process->id,
                 'context' => $process->context,
-                'entity_id' => $process->entityId,
+                'source_id' => $process->sourceId,
                 'force' => $process->force,
             ],
         );
@@ -61,18 +61,18 @@ final class ProcessLifecycleService
      */
     public function start(
         string $context,
-        int $entityId,
+        mixed $sourceId,
         bool $force = false,
     ): SyncProcessEntity {
         $process = DB::transaction(function () use (
             $context,
-            $entityId,
+            $sourceId,
             $force,
         ): SyncProcessEntity {
             $activeProcesses = $this->processRepository
                 ->findActiveForUpdate(
                     context: $context,
-                    entityId: $entityId,
+                    sourceId: $sourceId,
                 );
 
             foreach ($activeProcesses as $activeProcess) {
@@ -86,7 +86,7 @@ final class ProcessLifecycleService
 
             return $this->create([
                 'context' => $context,
-                'entity_id' => $entityId,
+                'source_id' => $sourceId,
                 'current_step' => SyncProcessStep::CREATED,
                 'force' => $force,
             ]);
@@ -105,7 +105,7 @@ final class ProcessLifecycleService
             $activeProcesses = $this->processRepository
                 ->findActiveForUpdate(
                     context: $process->context,
-                    entityId: $process->entityId,
+                    sourceId: $process->sourceId,
                 );
 
             foreach ($activeProcesses as $activeProcess) {
@@ -217,7 +217,7 @@ final class ProcessLifecycleService
             [
                 'sync_process_id' => $process->id,
                 'context' => $process->context,
-                'entity_id' => $process->entityId,
+                'source_id' => $process->sourceId,
                 'force' => $process->force,
             ],
         );
@@ -330,7 +330,7 @@ final class ProcessLifecycleService
             [
                 'sync_process_id' => $process->id,
                 'context' => $process->context,
-                'entity_id' => $process->entityId,
+                'source_id' => $process->sourceId,
                 ...$metadata,
             ],
         );

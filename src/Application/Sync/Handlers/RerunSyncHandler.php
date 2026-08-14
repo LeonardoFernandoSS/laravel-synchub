@@ -4,20 +4,14 @@ namespace Synchub\LaravelSynchub\Application\Sync\Handlers;
 
 use Synchub\LaravelSynchub\Application\Sync\Jobs\ProcessSync;
 use Synchub\LaravelSynchub\Application\Sync\Services\ProcessLifecycleService;
-use Synchub\LaravelSynchub\Application\Sync\Services\ProcessLogService;
-use Synchub\LaravelSynchub\Application\Sync\Services\SyncProcessRelationService;
 use Synchub\LaravelSynchub\Application\Sync\Services\SyncProcessService;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
-use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessMessage;
-use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessRelationType;
 
 final class RerunSyncHandler
 {
     public function __construct(
         private SyncProcessService $processService,
         private ProcessLifecycleService $lifecycleService,
-        private SyncProcessRelationService $relationService,
-        private ProcessLogService $logService,
     ) {}
 
     public function handle(

@@ -11,7 +11,7 @@ class SyncProcess extends Model
 {
     protected $fillable = [
         'context',
-        'entity_id',
+        'source_id',
 
         'force',
 

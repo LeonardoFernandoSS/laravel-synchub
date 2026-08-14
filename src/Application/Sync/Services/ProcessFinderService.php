@@ -23,11 +23,11 @@ class ProcessFinderService
 
     public function findReusableProcess(
         string $context,
-        int $entityId,
+        mixed $sourceId,
     ): ?SyncProcessEntity {
         return $this->repository->findReusableProcess(
             $context,
-            $entityId,
+            $sourceId,
         );
     }
 }

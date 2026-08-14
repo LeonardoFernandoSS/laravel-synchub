@@ -15,7 +15,7 @@ final class SyncDependencyEntity
 
         public readonly string $context,
 
-        public readonly int $entityId,
+        public readonly mixed $sourceId,
 
         public bool $resolved = false,
 

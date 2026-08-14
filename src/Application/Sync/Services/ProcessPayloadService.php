@@ -89,7 +89,7 @@ class ProcessPayloadService
         }
 
         return $process->payloadCachedAt->getTimestamp()
-            > now()->subMinutes(10)->getTimestamp();
+            > now()->subMinutes(config('synchub.source_payload.cache_minutes', 10))->getTimestamp();
     }
 
     public function hasSourcePayload(

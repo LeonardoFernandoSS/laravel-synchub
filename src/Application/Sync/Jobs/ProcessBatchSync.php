@@ -28,7 +28,7 @@ class ProcessBatchSync implements ShouldQueue
             $handler->handle(
                 new StartSync(
                     context: $this->context,
-                    id: $id,
+                    sourceId: $id,
                     force: $this->force,
                     parentProcess: $this->parentProcess,
                 )

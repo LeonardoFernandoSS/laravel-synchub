@@ -44,7 +44,7 @@ class SyncController extends Controller
             $step = null;
         }
 
-        $entityId = $request->input('entity_id');
+        $sourceId = $request->input('source_id');
 
         $query = SyncProcess::query();
 
@@ -62,19 +62,13 @@ class SyncController extends Controller
                 fn($query) => $query->where('current_step', $step)
             )
             ->when(
-                $entityId,
-                fn($query) => $query->where('entity_id', $entityId)
+                $sourceId,
+                fn($query) => $query->where('source_id', $sourceId)
             )
             ->latest()
             ->paginate(15)
             ->withQueryString();
 
-        /*
-     * Contadores das abas.
-     *
-     * Os contadores consideram os outros filtros,
-     * mas NÃO consideram o status atual.
-     */
         $statusCounts = (clone $query)
             ->when(
                 $context,
@@ -85,8 +79,8 @@ class SyncController extends Controller
                 fn($query) => $query->where('current_step', $step)
             )
             ->when(
-                $entityId,
-                fn($query) => $query->where('entity_id', $entityId)
+                $sourceId,
+                fn($query) => $query->where('source_id', $sourceId)
             )
             ->selectRaw('status, COUNT(*) as aggregate')
             ->groupBy('status')
@@ -113,7 +107,7 @@ class SyncController extends Controller
             'status',
             'step',
             'context',
-            'entityId',
+            'sourceId',
             'statusCounts',
         ));
     }
@@ -220,14 +214,14 @@ class SyncController extends Controller
         );
 
         $request->validate([
-            'id' => 'required|integer',
+            'id' => 'required',
             'force' => 'boolean',
         ]);
 
         $this->startSyncHandler->handle(
             new StartSync(
                 context: $context,
-                id: $request->integer('id'),
+                sourceId: $request->integer('id'),
                 force: $request->boolean('force'),
             )
         );
@@ -249,7 +243,6 @@ class SyncController extends Controller
 
         $request->validate([
             'ids' => 'required|array',
-            'ids.*' => 'integer',
             'force' => 'boolean',
         ]);
 

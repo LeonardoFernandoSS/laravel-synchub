@@ -30,11 +30,11 @@ interface SyncProcessRepository
      */
     public function findActiveForUpdate(
         string $context,
-        int $entityId,
+        mixed $sourceId,
     ): array;
 
     public function findReusableProcess(
         string $context,
-        int $entityId,
+        mixed $sourceId,
     ): ?SyncProcessEntity;
 }

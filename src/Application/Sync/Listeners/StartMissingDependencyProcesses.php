@@ -30,7 +30,7 @@ final class StartMissingDependencyProcesses
 
             $dependencyProcess = $this->finder->findReusableProcess(
                 context: $dependency->context,
-                entityId: $dependency->entityId,
+                sourceId: $dependency->sourceId,
             );
 
             $wasReused = $dependencyProcess !== null;
@@ -39,7 +39,7 @@ final class StartMissingDependencyProcesses
                 $dependencyProcess = $this->createProcess->handle(
                     new StartSync(
                         context: $dependency->context,
-                        id: $dependency->entityId,
+                        sourceId: $dependency->sourceId,
                         force: false,
                         parentProcess: $event->process,
                         relationType: SyncProcessRelationType::DEPENDENCY,
@@ -55,7 +55,7 @@ final class StartMissingDependencyProcesses
                 [
                     'parent_process_id' => $event->process->id,
                     'context' => $dependency->context,
-                    'entity_id' => $dependency->entityId,
+                    'source_id' => $dependency->sourceId,
                 ],
             );
 
@@ -63,7 +63,7 @@ final class StartMissingDependencyProcesses
                 process: $event->process,
                 dependencyProcess: $dependencyProcess,
                 context: $dependency->context,
-                entityId: $dependency->entityId,
+                sourceId: $dependency->sourceId,
             );
 
             $this->logService->log(
@@ -73,7 +73,7 @@ final class StartMissingDependencyProcesses
                     'process_id' => $dependencyProcess->id,
                     'dependent_process_id' => $event->process->id,
                     'context' => $dependency->context,
-                    'entity_id' => $dependency->entityId,
+                    'source_id' => $dependency->sourceId,
                 ],
             );
 

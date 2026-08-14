@@ -9,7 +9,7 @@ final readonly class StartSync
 {
     public function __construct(
         public string $context,
-        public int $id,
+        public mixed $sourceId,
         public bool $force = false,
         public ?SyncProcessEntity $parentProcess = null,
         public ?SyncProcessRelationType $relationType = SyncProcessRelationType::TRIGGERED,

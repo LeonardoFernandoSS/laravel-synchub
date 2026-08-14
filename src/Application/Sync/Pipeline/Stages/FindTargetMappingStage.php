@@ -32,7 +32,7 @@ class FindTargetMappingStage implements SyncStage
             ->repository
             ->findBySourceId(
                 $process->context,
-                $process->entityId,
+                $process->sourceId,
             );
 
         if ($execution->mapping === null) {

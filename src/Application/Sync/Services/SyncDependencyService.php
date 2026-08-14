@@ -80,13 +80,13 @@ final class SyncDependencyService
         SyncProcessEntity $process,
         SyncProcessEntity $dependencyProcess,
         string $context,
-        int $entityId,
+        mixed $sourceId,
     ): SyncDependencyEntity {
         return $this->repository->create(
             $process,
             $dependencyProcess,
             $context,
-            $entityId,
+            $sourceId,
         );
     }
 }

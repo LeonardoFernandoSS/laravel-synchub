@@ -6,6 +6,6 @@ final class SyncDependencyData
 {
     public function __construct(
         public readonly string $context,
-        public readonly int $entityId
+        public readonly mixed $sourceId
     ) {}
 }

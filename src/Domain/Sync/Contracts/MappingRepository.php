@@ -10,12 +10,12 @@ interface MappingRepository
 {
     public function findBySourceId(
         string $sourceType,
-        int $sourceId,
+        mixed $sourceId,
     ): ?MappingEntity;
 
     public function create(
         string $sourceType,
-        int $sourceId,
+        mixed $sourceId,
         SyncResultData $response,
         SyncData $mappedData,
     ): MappingEntity;
@@ -25,14 +25,4 @@ interface MappingRepository
         SyncResultData $response,
         SyncData $mappedData,
     ): MappingEntity;
-
-    public function existByInternalId(
-        string $mappableType,
-        int $sourceId
-    ): bool;
-
-    public function getExternalIdByInternalId(
-        string $mappableType,
-        int $sourceId
-    ): ?string;
 }

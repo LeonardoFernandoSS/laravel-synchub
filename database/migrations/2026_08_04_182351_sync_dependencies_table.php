@@ -24,7 +24,7 @@ return new class extends Migration
 
             // Entidade que originou a dependência
             $table->string('context');
-            $table->unsignedBigInteger('entity_id');
+            $table->string('source_id');
 
             // Estado da dependência
             $table->boolean('resolved')->default(false);
@@ -36,7 +36,7 @@ return new class extends Migration
                 [
                     'sync_process_id',
                     'context',
-                    'entity_id',
+                    'source_id',
                 ],
                 'sync_dependencies_process_context_unique'
             );

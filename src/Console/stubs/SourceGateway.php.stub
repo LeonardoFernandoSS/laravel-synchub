@@ -6,19 +6,19 @@ use Synchub\LaravelSynchub\Domain\Sync\Contracts\SourceGateway;
 
 final class {{ name }}SourceGateway implements SourceGateway
 {
-    public function find(int $id): array
+    public function find(mixed $sourceId): array
     {
         throw new \LogicException(
             'Implement {{ name }}SourceGateway::find().'
         );
     }
 
-    public function saveExternalId(
-        int $id,
-        string $externalId
+    public function saveTargetId(
+        mixed $sourceId,
+        mixed $targetId
     ): void {
         throw new \LogicException(
-            'Implement {{ name }}SourceGateway::saveExternalId().'
+            'Implement {{ name }}SourceGateway::saveTargetId().'
         );
     }
 }

@@ -3,7 +3,6 @@
 namespace Synchub\LaravelSynchub\Application\Sync\Listeners;
 
 use Synchub\LaravelSynchub\Application\Sync\Events\ProcessDependenciesResolved;
-use Synchub\LaravelSynchub\Application\Sync\Handlers\ResumeSyncHandler;
 use Synchub\LaravelSynchub\Application\Sync\Jobs\ResumeProcessSync;
 
 final class ResumeWaitingProcess

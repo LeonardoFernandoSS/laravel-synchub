@@ -21,7 +21,7 @@ final class CreateSyncProcessHandler
     ): SyncProcessEntity {
         $process = $this->processService->start(
             context: $command->context,
-            entityId: $command->id,
+            sourceId: $command->sourceId,
             force: $command->force,
         );
 
@@ -36,17 +36,6 @@ final class CreateSyncProcessHandler
             child: $process,
             type: $relationType,
         );
-
-        // $this->logService->log(
-        //     $process,
-        //     $this->relationService->messageFor($relationType),
-        //     [
-        //         'parent_process_id' => $command->parentProcess->id,
-        //         'parent_context' => $command->parentProcess->context,
-        //         'parent_entity_id' => $command->parentProcess->entityId,
-        //         'relation_type' => $relationType->value,
-        //     ],
-        // );
 
         return $process;
     }

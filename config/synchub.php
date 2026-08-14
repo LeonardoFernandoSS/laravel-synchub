@@ -113,4 +113,21 @@ return [
             true,
         ),
     ],
+
+    'source_payload' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Source Payload Cache
+        |--------------------------------------------------------------------------
+        |
+        | Defines for how many minutes a previously fetched source payload
+        | can be reused by a synchronization process.
+        |
+        */
+
+        'cache_minutes' => env(
+            'SYNCHUB_SOURCE_PAYLOAD_CACHE_MINUTES',
+            10
+        ),
+    ],
 ];

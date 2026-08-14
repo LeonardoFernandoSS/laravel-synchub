@@ -12,7 +12,7 @@ class EloquentMappingRepository implements MappingRepository
 {
     public function findBySourceId(
         string $sourceType,
-        int $sourceId,
+        mixed $sourceId,
     ): ?MappingEntity {
 
         $mapping = SyncMapping::query()
@@ -27,7 +27,7 @@ class EloquentMappingRepository implements MappingRepository
 
     public function create(
         string $sourceType,
-        int $sourceId,
+        mixed $sourceId,
         SyncResultData $response,
         SyncData $mappedData,
     ): MappingEntity {
@@ -49,7 +49,7 @@ class EloquentMappingRepository implements MappingRepository
 
         $mapping = SyncMapping::query()
             ->where('source_type', $mapping->context)
-            ->where('source_id', $mapping->entityId)
+            ->where('source_id', $mapping->sourceId)
             ->firstOrFail();
 
         $mapping->update([
@@ -60,33 +60,11 @@ class EloquentMappingRepository implements MappingRepository
         return $this->toEntity($mapping->fresh());
     }
 
-    public function existByInternalId(
-        string $mappableType,
-        int $sourceId
-    ): bool {
-
-        return SyncMapping::query()
-            ->where('source_type', $mappableType)
-            ->where('source_id', $sourceId)
-            ->exists();
-    }
-
-    public function getExternalIdByInternalId(
-        string $mappableType,
-        int $sourceId
-    ): ?string {
-
-        return SyncMapping::query()
-            ->where('source_type', $mappableType)
-            ->where('source_id', $sourceId)
-            ->value('target_id');
-    }
-
     private function toEntity(SyncMapping $model): MappingEntity
     {
         return new MappingEntity(
             context: $model->source_type,
-            entityId: $model->source_id,
+            sourceId: $model->source_id,
             targetId: $model->target_id,
             payloadHash: $model->payload_hash,
         );

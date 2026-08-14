@@ -28,7 +28,7 @@ class LoadSourceDataStage implements SyncStage
             SyncProcessStep::LOAD_SOURCE_DATA,
             SyncProcessMessage::LOADING_SOURCE_DATA,
             [
-                "id" => $process->entityId,
+                "id" => $process->sourceId,
             ]
         );
         
@@ -49,7 +49,7 @@ class LoadSourceDataStage implements SyncStage
         $execution->sourcePayload = $execution
             ->context
             ->source
-            ->find($process->entityId);
+            ->find($process->sourceId);
 
         $this->processService->saveSourcePayload(
             $process,

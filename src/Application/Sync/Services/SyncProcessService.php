@@ -24,12 +24,12 @@ final class SyncProcessService
 
     public function start(
         string $context,
-        int $entityId,
+        mixed $sourceId,
         bool $force = false,
     ): SyncProcessEntity {
         return $this->lifecycle->start(
             $context,
-            $entityId,
+            $sourceId,
             $force,
         );
     }
@@ -47,11 +47,11 @@ final class SyncProcessService
     public function findReusableProcess(
         string $type,
         string $context,
-        int $entityId,
+        mixed $sourceId,
     ): ?SyncProcessEntity {
         return $this->finder->findReusableProcess(
             $context,
-            $entityId,
+            $sourceId,
         );
     }
 

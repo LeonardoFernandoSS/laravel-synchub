@@ -12,7 +12,7 @@ final class SyncProcessEntity
 
         public string $context,
 
-        public int $entityId,
+        public mixed $sourceId,
 
         public SyncProcessStatus $status,
 

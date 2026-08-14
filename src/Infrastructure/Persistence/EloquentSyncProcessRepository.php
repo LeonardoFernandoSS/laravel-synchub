@@ -61,11 +61,11 @@ final class EloquentSyncProcessRepository implements SyncProcessRepository
      */
     public function findActiveForUpdate(
         string $context,
-        int $entityId,
+        mixed $sourceId,
     ): array {
         return SyncProcess::query()
             ->where('context', $context)
-            ->where('entity_id', $entityId)
+            ->where('source_id', $sourceId)
             ->whereIn('status', [
                 SyncProcessStatus::PENDING,
                 SyncProcessStatus::PROCESSING,
@@ -82,11 +82,11 @@ final class EloquentSyncProcessRepository implements SyncProcessRepository
 
     public function findReusableProcess(
         string $context,
-        int $entityId,
+        mixed $sourceId,
     ): ?SyncProcessEntity {
         $process = SyncProcess::query()
             ->where('context', $context)
-            ->where('entity_id', $entityId)
+            ->where('source_id', $sourceId)
             ->whereIn('status', [
                 SyncProcessStatus::SUCCESS,
                 SyncProcessStatus::PROCESSING,
@@ -106,7 +106,7 @@ final class EloquentSyncProcessRepository implements SyncProcessRepository
         return new SyncProcessEntity(
             id: $model->id,
             context: $model->context,
-            entityId: $model->entity_id,
+            sourceId: $model->source_id,
             status: $model->status,
             currentStep: $model->current_step,
             force: $model->force,

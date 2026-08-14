@@ -187,7 +187,7 @@
             </span>
 
             <span class="text-xs font-mono text-slate-400 mt-0.5 block">
-                Ref ID: #{{ $process->entity_id }}
+                Ref ID: #{{ $process->source_id }}
             </span>
         </div>
 
@@ -322,7 +322,7 @@
                     </div>
 
                     <div class="text-xs text-slate-400 font-mono">
-                        ID: #{{ $dependency->entity_id }}
+                        ID: #{{ $dependency->source_id }}
                     </div>
 
                     @if($dependency->resolved)
@@ -456,7 +456,7 @@
                             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-slate-400">
 
                                 <span>
-                                    Entidade #{{ $child->entity_id }}
+                                    Entidade #{{ $child->source_id }}
                                 </span>
 
                                 <span class="text-slate-300 dark:text-slate-600">

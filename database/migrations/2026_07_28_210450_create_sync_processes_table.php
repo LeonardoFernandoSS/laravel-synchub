@@ -15,7 +15,7 @@ return new class extends Migration
              * Identidade da sincronização
              */
             $table->string('context', 150);
-            $table->unsignedBigInteger('entity_id');
+            $table->string('source_id');
 
             /*
              * Estado
@@ -58,7 +58,7 @@ return new class extends Migration
              * Identidade da sincronização.
              */
             $table->index(
-                ['context', 'entity_id'],
+                ['context', 'source_id'],
                 'sync_processes_identity_index'
             );
 
@@ -66,7 +66,7 @@ return new class extends Migration
              * Busca de processos ativos.
              */
             $table->index(
-                ['context', 'entity_id', 'status'],
+                ['context', 'source_id', 'status'],
                 'sync_processes_status_index'
             );
         });

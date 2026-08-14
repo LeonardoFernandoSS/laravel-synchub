@@ -6,8 +6,8 @@ final class MappingEntity
 {
     public function __construct(
         public readonly string $context,
-        public readonly int $entityId,
-        public readonly string $targetId,
+        public readonly mixed $sourceId,
+        public readonly mixed $targetId,
         public readonly string $payloadHash,
     ) {}
 }

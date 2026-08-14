@@ -32,7 +32,7 @@ final class SyncProcessRelationService
                 'relation_type' => $type->value,
                 'parent_process_id' => $parent->id,
                 'parent_context' => $parent->context,
-                'parent_entity_id' => $parent->entityId,
+                'parent_entity_id' => $parent->sourceId,
                 'child_process_id' => $child->id,                
             ],
             

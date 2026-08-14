@@ -47,7 +47,7 @@ class CreateTargetStage implements SyncStage
             ->repository
             ->create(
                 $process->context,
-                $process->entityId,
+                $process->sourceId,
                 $response,
                 $targetData,
             );
@@ -63,8 +63,8 @@ class CreateTargetStage implements SyncStage
 
         $execution->context
             ->source
-            ->saveExternalId(
-                $process->entityId,
+            ->saveTargetId(
+                $process->sourceId,
                 $response->id,
             );
 

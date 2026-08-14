@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('source_type');
-            $table->unsignedBigInteger('source_id');
+            $table->string('source_id');
 
             $table->string('target_id');
 
