@@ -1,4 +1,4 @@
-# 🧠 Laravel Synchub: A Comprehensive Synchronization Platform
+# 🧠 Laravel Synchub: Synchronization Platform
 Laravel Synchub is a robust synchronization platform designed to streamline data synchronization across multiple sources. This platform provides a seamless way to manage synchronization processes, ensuring data consistency and integrity. With its modular architecture and extensive feature set, Laravel Synchub is an ideal solution for developers seeking to integrate synchronization capabilities into their applications.
 
 ## 🚀 Features
@@ -324,4 +324,4 @@ To contribute to Laravel Synchub, please follow these steps:
 Laravel Synchub is licensed under the MIT License.
 
 ## 📬 Contact
-For more information about Laravel Synchub, please contact us at [support@laravelsynchub.com](mailto:leonardo.fernando06@gmail.com).
+For more information about Laravel Synchub, please contact us at [leonardo.fernando06@gmail.com](mailto:leonardo.fernando06@gmail.com).
