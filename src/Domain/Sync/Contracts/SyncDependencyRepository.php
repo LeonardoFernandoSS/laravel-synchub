@@ -11,7 +11,7 @@ interface SyncDependencyRepository
         SyncProcessEntity $process,
         SyncProcessEntity $dependencyProcess,
         string $context,
-        int $contextId
+        int $entityId
     ): SyncDependencyEntity;
 
     /**

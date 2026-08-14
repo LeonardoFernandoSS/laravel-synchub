@@ -2,24 +2,27 @@
 
 namespace Synchub\LaravelSynchub\Application\Sync\Pipeline\Stages;
 
-use Synchub\LaravelSynchub\Domain\Sync\Contracts\SyncStage;
+use Closure;
 use Synchub\LaravelSynchub\Application\Sync\Pipeline\SyncExecution;
 use Synchub\LaravelSynchub\Application\Sync\Services\SyncProcessService;
-use Closure;
+use Synchub\LaravelSynchub\Domain\Sync\Contracts\SyncStage;
 
 class FinishProcessStage implements SyncStage
 {
     public function __construct(
-        private SyncProcessService $syncProcess
+        private SyncProcessService $processService,
     ) {}
 
     public function handle(
         SyncExecution $execution,
-        Closure $next
+        Closure $next,
     ): mixed {
-        $this->syncProcess->success(
-            $execution->process,
-            $execution->response->raw
+
+        $process = $execution->process;
+        
+        $this->processService->success(
+            $process,
+            $execution->targetResponse?->raw ?? [],
         );
 
         return $next($execution);

@@ -2,11 +2,19 @@
 
 namespace Synchub\LaravelSynchub\Domain\Sync\DTO;
 
-class SyncData
+final class SyncData
 {
+    public readonly string $hash;
+
     public function __construct(
-        public readonly string $target,
         public readonly array $payload,
-        public readonly string $hash
-    ) {}
+    ) {
+        $this->hash = hash(
+            'sha256',
+            json_encode(
+                $payload,
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+            )
+        );
+    }
 }

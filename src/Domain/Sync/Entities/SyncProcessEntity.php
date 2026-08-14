@@ -5,33 +5,51 @@ namespace Synchub\LaravelSynchub\Domain\Sync\Entities;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStep;
 
-class SyncProcessEntity
+final class SyncProcessEntity
 {
     public function __construct(
-
         public ?int $id,
-
-        public string $type,
 
         public string $context,
 
-        public int $contextId,
+        public int $entityId,
 
-        public SyncProcessStatus $status = SyncProcessStatus::PENDING,
+        public SyncProcessStatus $status,
 
-        public SyncProcessStep $step = SyncProcessStep::CREATED,
+        public SyncProcessStep $currentStep,
 
-        public bool $force = false,
+        public bool $force,
 
-        public array $internalPayload = [],
+        public array $sourcePayload = [],
 
-        public array $mappedPayload = [],
+        public array $targetPayload = [],
 
-        public array $externalResponse = [],
+        public array $targetResponse = [],
 
         public array $error = [],
 
         public ?\DateTimeInterface $payloadCachedAt = null,
 
+        public ?\DateTimeInterface $startedAt = null,
+        public ?\DateTimeInterface $resumedAt = null,
+        public ?\DateTimeInterface $finishedAt = null,
     ) {}
+
+    public function isWaitingDependency(): bool
+    {
+        return $this->status === SyncProcessStatus::WAITING_DEPENDENCY;
+    }
+
+    public function isRunnable(): bool
+    {
+        return in_array(
+            $this->status,
+            [
+                SyncProcessStatus::PENDING,
+                SyncProcessStatus::PROCESSING,
+                SyncProcessStatus::WAITING_DEPENDENCY,
+            ],
+            true,
+        );
+    }
 }

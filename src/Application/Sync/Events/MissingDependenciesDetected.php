@@ -2,11 +2,11 @@
 
 namespace Synchub\LaravelSynchub\Application\Sync\Events;
 
+use Illuminate\Foundation\Events\Dispatchable;
 use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncDependencyData;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
-use Illuminate\Foundation\Events\Dispatchable;
 
-class MissingDependenciesDetected
+final readonly class MissingDependenciesDetected
 {
     use Dispatchable;
 
@@ -14,7 +14,7 @@ class MissingDependenciesDetected
      * @param SyncDependencyData[] $dependencies
      */
     public function __construct(
-        public readonly SyncProcessEntity $process,
-        public readonly array $dependencies,
+        public SyncProcessEntity $process,
+        public array $dependencies,
     ) {}
 }

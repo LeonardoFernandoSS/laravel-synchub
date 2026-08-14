@@ -16,14 +16,18 @@ class ProcessFinderService
         return $this->repository->findOrFail($id);
     }
 
+    public function find(int $id): ?SyncProcessEntity
+    {
+        return $this->repository->find($id);
+    }
+
     public function findReusableProcess(
         string $context,
-        int $contextId
+        int $entityId,
     ): ?SyncProcessEntity {
-
         return $this->repository->findReusableProcess(
             $context,
-            $contextId
+            $entityId,
         );
     }
 }

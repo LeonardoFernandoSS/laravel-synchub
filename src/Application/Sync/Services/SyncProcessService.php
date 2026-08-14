@@ -3,14 +3,12 @@
 namespace Synchub\LaravelSynchub\Application\Sync\Services;
 
 use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncDependencyData;
-use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncLogType;
+use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessMessage;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStep;
-use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
-use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus;
 use Throwable;
 
-class SyncProcessService
+final class SyncProcessService
 {
     public function __construct(
         private ProcessLifecycleService $lifecycle,
@@ -19,26 +17,20 @@ class SyncProcessService
         private ProcessLogService $logs,
     ) {}
 
-    public function create(
-        array $data
-    ): SyncProcessEntity {
-
-        return $this->lifecycle->create(
-            $data
-        );
+    public function create(array $data): SyncProcessEntity
+    {
+        return $this->lifecycle->create($data);
     }
 
     public function start(
-        string $type,
         string $context,
-        int $contextId,
-        bool $force = false
+        int $entityId,
+        bool $force = false,
     ): SyncProcessEntity {
         return $this->lifecycle->start(
-            $type,
             $context,
-            $contextId,
-            $force
+            $entityId,
+            $force,
         );
     }
 
@@ -47,54 +39,61 @@ class SyncProcessService
         return $this->finder->findOrFail($id);
     }
 
+    public function find(int $id): ?SyncProcessEntity
+    {
+        return $this->finder->find($id);
+    }
+
+    public function findReusableProcess(
+        string $type,
+        string $context,
+        int $entityId,
+    ): ?SyncProcessEntity {
+        return $this->finder->findReusableProcess(
+            $context,
+            $entityId,
+        );
+    }
+
     public function resume(
-        SyncProcessEntity $process
+        SyncProcessEntity $process,
     ): void {
         $this->lifecycle->resume($process);
     }
 
-    public function processing(SyncProcessEntity $process): void
-    {
+    public function processing(
+        SyncProcessEntity $process,
+    ): void {
         $this->lifecycle->processing($process);
     }
 
     public function success(
         SyncProcessEntity $process,
-        array $response = []
+        array $targetResponse = [],
     ): void {
         $this->lifecycle->success(
             $process,
-            $response
+            $targetResponse,
         );
     }
 
     public function failed(
         SyncProcessEntity $process,
-        Throwable $e
+        Throwable $exception,
     ): void {
         $this->lifecycle->failed(
             $process,
-            $e
+            $exception,
         );
     }
 
     public function error(
         SyncProcessEntity $process,
-        Throwable $e
+        Throwable $exception,
     ): void {
         $this->lifecycle->error(
             $process,
-            $e
-        );
-    }
-
-    public function findReusableProcess(
-        string $context,
-        int $contextId
-    ): ?SyncProcessEntity {
-        return $this->finder->findReusableProcess(
-            $context,
-            $contextId
+            $exception,
         );
     }
 
@@ -111,18 +110,19 @@ class SyncProcessService
         );
     }
 
-    public function obsolete(SyncProcessEntity $process): void
-    {
+    public function obsolete(
+        SyncProcessEntity $process,
+    ): void {
         $this->lifecycle->obsolete($process);
     }
 
     public function updateStep(
         SyncProcessEntity $process,
-        SyncProcessStep $step
+        SyncProcessStep $step,
     ): void {
         $this->lifecycle->updateStep(
             $process,
-            $step
+            $step,
         );
     }
 
@@ -130,34 +130,39 @@ class SyncProcessService
         SyncProcessEntity $process,
         SyncProcessStep $step,
         SyncProcessMessage|string $message,
-        array $payload = []
+        array $payload = [],
     ): void {
         $this->lifecycle->step(
             $process,
             $step,
             $message,
-            $payload
+            $payload,
         );
     }
+
+    public function isStillRunnable(
+        SyncProcessEntity $process,
+    ): bool {
+        return $this->lifecycle->isStillRunnable($process);
+    }
+
 
     public function log(
         SyncProcessEntity $process,
         SyncProcessMessage|string $message,
         array $payload = [],
-        SyncLogType $type = SyncLogType::TIMELINE,
     ): void {
         $this->logs->log(
             $process,
             $message,
             $payload,
-            $type
         );
     }
 
     public function debug(
         SyncProcessEntity $process,
         SyncProcessMessage|string $message,
-        array $payload = []
+        array $payload = [],
     ): void {
         $this->logs->debug(
             $process,
@@ -166,51 +171,55 @@ class SyncProcessService
         );
     }
 
-    public function saveInternalPayload(
+    public function getSourcePayload(
         SyncProcessEntity $process,
-        array $payload
-    ): void {
-        $this->payload->saveInternalPayload(
-            $process,
-            $payload
-        );
-    }
-
-    public function saveMappedPayload(
-        SyncProcessEntity $process,
-        array $payload
-    ): void {
-        $this->payload->saveMappedPayload(
-            $process,
-            $payload
-        );
-    }
-
-    public function saveExternalResponse(
-        SyncProcessEntity $process,
-        array $response
-    ): void {
-        $this->payload->saveExternalResponse(
-            $process,
-            $response
-        );
-    }
-
-    public function canReuseInternalPayload(
-        SyncProcessEntity $process
-    ): bool {
-        return $this->payload->canReuseInternalPayload($process);
-    }
-
-    public function getInternalPayload(
-        SyncProcessEntity $process
     ): array {
-        return $this->payload->getInternalPayload($process);
+        return $this->payload->getSourcePayload(
+            $process,
+        );
     }
 
-    public function isObsolete(
-        SyncProcessEntity $process
+    public function saveSourcePayload(
+        SyncProcessEntity $process,
+        array $payload,
+    ): void {
+        $this->payload->saveSourcePayload(
+            $process,
+            $payload,
+        );
+    }
+
+    public function invalidateSourcePayload(
+        SyncProcessEntity $process,
+    ): void{
+        $this->payload->invalidateSourcePayload(
+            $process,
+        );
+    }
+
+    public function saveTargetPayload(
+        SyncProcessEntity $process,
+        array $payload,
+    ): void {
+        $this->payload->saveTargetPayload(
+            $process,
+            $payload,
+        );
+    }
+
+    public function saveTargetResponse(
+        SyncProcessEntity $process,
+        array $response,
+    ): void {
+        $this->payload->saveTargetResponse(
+            $process,
+            $response,
+        );
+    }
+
+    public function canReuseSourcePayload(
+        SyncProcessEntity $process,
     ): bool {
-        return $process->status == SyncProcessStatus::OBSOLETE;
+        return $this->payload->canReuseSourcePayload($process);
     }
 }

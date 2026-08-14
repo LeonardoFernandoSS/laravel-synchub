@@ -4,24 +4,38 @@ namespace Synchub\LaravelSynchub\Application\Sync\Pipeline\Stages;
 
 use Closure;
 use Synchub\LaravelSynchub\Application\Sync\Pipeline\SyncExecution;
+use Synchub\LaravelSynchub\Application\Sync\Services\SyncProcessService;
 use Synchub\LaravelSynchub\Domain\Sync\Contracts\SyncStage;
 
 class SynchronizeStage implements SyncStage
 {
     public function __construct(
-        private CreateExternalStage $create,
-        private UpdateExternalStage $update,
+        private SyncProcessService $processService,
+        private CreateTargetStage $create,
+        private UpdateTargetStage $update,
     ) {}
 
     public function handle(
         SyncExecution $execution,
-        Closure $next
+        Closure $next,
     ): mixed {
 
-        if (!$execution->mapping) {
-            $this->create->execute($execution);
+        if (!$this->processService->isStillRunnable(
+            $execution->process,
+        )) {
+            return $execution;
+        }
+
+        if ($execution->mapping === null) {
+            $this->create->handle(
+                $execution,
+                fn(SyncExecution $execution) => $execution,
+            );
         } else {
-            $this->update->execute($execution);
+            $this->update->handle(
+                $execution,
+                fn(SyncExecution $execution) => $execution,
+            );
         }
 
         return $next($execution);

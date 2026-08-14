@@ -8,26 +8,28 @@ use Synchub\LaravelSynchub\Application\Sync\Events\MissingDependenciesDetected;
 use Synchub\LaravelSynchub\Application\Sync\Events\ProcessDependenciesResolved;
 use Synchub\LaravelSynchub\Application\Sync\Events\ProcessSucceeded;
 use Synchub\LaravelSynchub\Application\Sync\Listeners\CheckDependenciesAfterResolution;
+use Synchub\LaravelSynchub\Application\Sync\Listeners\CheckProcessDependencies;
 use Synchub\LaravelSynchub\Application\Sync\Listeners\ExecuteAfterSync;
-use Synchub\LaravelSynchub\Application\Sync\Listeners\HandleMissingDependencies;
 use Synchub\LaravelSynchub\Application\Sync\Listeners\ResolveWaitingDependencies;
 use Synchub\LaravelSynchub\Application\Sync\Listeners\ResumeWaitingProcess;
+use Synchub\LaravelSynchub\Application\Sync\Listeners\RunAfterSync;
+use Synchub\LaravelSynchub\Application\Sync\Listeners\StartMissingDependencyProcesses;
 
 class EventServiceProvider extends ServiceProvider
 {
     protected $listen = [
 
         MissingDependenciesDetected::class => [
-            HandleMissingDependencies::class,
+            StartMissingDependencyProcesses::class,
         ],
 
         ProcessSucceeded::class => [
-            ExecuteAfterSync::class,
+            RunAfterSync::class,
             ResolveWaitingDependencies::class,
         ],
 
         DependencyResolved::class => [
-            CheckDependenciesAfterResolution::class,
+            CheckProcessDependencies::class,
         ],
 
         ProcessDependenciesResolved::class => [

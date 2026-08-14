@@ -1,0 +1,19 @@
+<?php
+
+namespace {{ namespace }};
+
+use Synchub\LaravelSynchub\Domain\Sync\Contracts\SyncMapper;
+use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncData;
+
+final class {{ name }}SyncMapper implements SyncMapper
+{
+    public function map(
+        array $data
+    ): SyncData {
+        $payload = [];
+
+        return new SyncData(
+            payload: $payload,
+        );
+    }
+}

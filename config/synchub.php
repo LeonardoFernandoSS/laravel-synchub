@@ -7,7 +7,7 @@ return [
     | Queue
     |--------------------------------------------------------------------------
     |
-    | Configurações usadas pelos Jobs de sincronização.
+    | Configurações utilizadas pelos Jobs de sincronização.
     |
     */
 
@@ -15,67 +15,102 @@ return [
 
         'connection' => env(
             'SYNCHUB_QUEUE_CONNECTION',
-            config('queue.default')
+            config('queue.default'),
         ),
 
         'name' => env(
             'SYNCHUB_QUEUE',
-            'default'
+            'default',
         ),
 
-    ],
+        'tries' => [
+            'default' => env(
+                'SYNCHUB_QUEUE_TRIES',
+                3,
+            ),
 
+            'rerun' => env(
+                'SYNCHUB_QUEUE_RERUN_TRIES',
+                5,
+            ),
+
+            'dependency' => env(
+                'SYNCHUB_QUEUE_DEPENDENCY_TRIES',
+                3,
+            ),
+        ],
+
+        'backoff' => [
+            60,
+            300,
+            900,
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
     | Routes
     |--------------------------------------------------------------------------
+    |
+    | Configurações das rotas disponibilizadas pelo SyncHub.
+    |
     */
 
     'routes' => [
 
         'enabled' => env(
             'SYNCHUB_ROUTES_ENABLED',
-            true
+            true,
         ),
 
         'prefix' => env(
             'SYNCHUB_ROUTE_PREFIX',
-            'sync'
+            'sync',
         ),
 
-        'routes' => [
+        'api' => [
+            'enabled' => env(
+                'SYNCHUB_API_ROUTES_ENABLED',
+                true,
+            ),
 
-            'api' => [
-                'enabled' => true,
-                'prefix' => 'sync',
-                'middleware' => ['api'],
+            'prefix' => env(
+                'SYNCHUB_API_ROUTE_PREFIX',
+                'synchub',
+            ),
+
+            'middleware' => [
+                'api',
             ],
-
-            'web' => [
-                'enabled' => true,
-                'middleware' => ['web'],
-            ],
-
         ],
 
-    ],
+        'web' => [
+            'enabled' => env(
+                'SYNCHUB_WEB_ROUTES_ENABLED',
+                true,
+            ),
 
+            'middleware' => [
+                'web',
+            ],
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
-    | Sync Process
+    | Process
     |--------------------------------------------------------------------------
+    |
+    | Configurações relacionadas à persistência e histórico dos processos
+    | de sincronização.
+    |
     */
 
     'process' => [
 
         'retain_logs' => env(
             'SYNCHUB_RETAIN_LOGS',
-            true
+            true,
         ),
-
     ],
-
-
 ];

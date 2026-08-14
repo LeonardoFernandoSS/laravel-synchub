@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Synchub\LaravelSynchub\Http\Controllers\SyncController;
 
-Route::prefix('sync')->group(function () {
+Route::prefix('synchub')->group(function () {
 
     Route::post('{entity}', [SyncController::class, 'sync',]);
 

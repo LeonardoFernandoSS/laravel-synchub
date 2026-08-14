@@ -1,0 +1,36 @@
+# --- Dependências do PHP & Composer ---
+/vendor/
+.composer/
+composer.lock
+
+# --- Ambiente de Testes & Ferramentas Locais ---
+/.phpunit.result.cache
+/.pest_tracker
+/phpunit.xml
+/phpstan.neon
+/psalm.xml
+
+# --- Arquivos do Orchestra Testbench (se gerados na raiz) ---
+/testbench.yaml
+/workbench/
+/.env
+/.env.sandbox
+
+# --- Dependências de Front-end (se houver assets no pacote) ---
+/node_modules/
+/npm-debug.log
+/yarn-error.log
+/pnpm-debug.log
+
+# --- IDEs e Editores de Código ---
+/.idea/
+/.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- Arquivos de Sistema ---
+.DS_Store
+Thumbs.db

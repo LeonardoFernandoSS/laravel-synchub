@@ -2,9 +2,9 @@
 
 namespace Synchub\LaravelSynchub\Application\Sync\Events;
 
-use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncDependencyEntity;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncDependencyEntity;
 
 final readonly class DependencyResolved
 {

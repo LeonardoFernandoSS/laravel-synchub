@@ -2,30 +2,25 @@
 
 namespace Synchub\LaravelSynchub\Domain\Sync\Models;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStep;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
-
 class SyncProcess extends Model
 {
-
     protected $fillable = [
-
-        'type',
         'context',
-        'context_id',
+        'entity_id',
 
         'force',
 
         'status',
         'current_step',
 
-        'internal_payload',
-        'mapped_payload',
-        'external_response',
+        'source_payload',
+        'target_payload',
+        'target_response',
 
         'error',
 
@@ -33,30 +28,25 @@ class SyncProcess extends Model
 
         'started_at',
         'finished_at',
-
+        'resumed_at',
     ];
-
 
     protected $casts = [
+        'status' => SyncProcessStatus::class,
+        'current_step' => SyncProcessStep::class,
 
-        'status'=>SyncProcessStatus::class,
+        'force' => 'boolean',
 
-        'current_step'=>SyncProcessStep::class,
+        'source_payload' => 'array',
+        'target_payload' => 'array',
+        'target_response' => 'array',
+        'error' => 'array',
 
-        'force'=>'boolean',
-
-        'internal_payload'=>'array',
-        'mapped_payload'=>'array',
-        'external_response'=>'array',
-        'error'=>'array',
-
-        'payload_cached_at'=>'datetime',
-        'started_at'=>'datetime',
-        'finished_at'=>'datetime',
-
+        'payload_cached_at' => 'datetime',
+        'started_at' => 'datetime',
+        'finished_at' => 'datetime',
+        'resumed_at' => 'datetime',
     ];
-
-
 
     public function logs(): HasMany
     {
@@ -65,8 +55,6 @@ class SyncProcess extends Model
         );
     }
 
-
-
     public function dependencies(): HasMany
     {
         return $this->hasMany(
@@ -74,9 +62,7 @@ class SyncProcess extends Model
         );
     }
 
-
-
-    public function dependentProcesses()
+    public function dependentProcesses(): HasMany
     {
         return $this->hasMany(
             SyncDependency::class,
@@ -84,9 +70,7 @@ class SyncProcess extends Model
         );
     }
 
-
-
-    public function triggeredRelations()
+    public function triggeredRelations(): HasMany
     {
         return $this->hasMany(
             SyncProcessRelation::class,
@@ -94,21 +78,11 @@ class SyncProcess extends Model
         );
     }
 
-
-
-    public function parentRelations()
+    public function parentRelations(): HasMany
     {
         return $this->hasMany(
             SyncProcessRelation::class,
             'child_process_id'
         );
     }
-
-
-
-    public function isObsolete(): bool
-    {
-        return $this->status === SyncProcessStatus::OBSOLETE;
-    }
-
 }

@@ -3,9 +3,9 @@
 namespace Synchub\LaravelSynchub\Application\Sync\Pipeline;
 
 use Synchub\LaravelSynchub\Domain\Sync\Context\SyncContext;
-use Synchub\LaravelSynchub\Domain\Sync\Contracts\GenericMapping;
-use Synchub\LaravelSynchub\Domain\Sync\DTO\ExternalSyncResponse;
 use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncData;
+use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncResultData;
+use Synchub\LaravelSynchub\Domain\Sync\Entities\MappingEntity;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
 
 class SyncExecution
@@ -15,11 +15,11 @@ class SyncExecution
         public SyncContext $context,
     ) {}
 
-    public array $internalPayload = [];
+    public array $sourcePayload = [];
 
-    public ?SyncData $mappedData = null;
+    public ?SyncData $targetData = null;
 
-    public ?GenericMapping $mapping = null;
+    public ?MappingEntity $mapping = null;
 
-    public ?ExternalSyncResponse $response = null;
+    public ?SyncResultData $targetResponse = null;
 }

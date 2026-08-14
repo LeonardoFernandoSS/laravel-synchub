@@ -14,14 +14,14 @@ class EloquentSyncDependencyRepository implements SyncDependencyRepository
         SyncProcessEntity $process,
         SyncProcessEntity $dependencyProcess,
         string $context,
-        int $contextId
+        int $entityId
     ): SyncDependencyEntity {
 
         $dependency = SyncDependency::firstOrCreate(
             [
                 'sync_process_id' => $process->id,
                 'context' => $context,
-                'context_id' => $contextId,
+                'entity_id' => $entityId,
             ],
             [
                 'depends_on_process_id' => $dependencyProcess->id,
@@ -83,10 +83,10 @@ class EloquentSyncDependencyRepository implements SyncDependencyRepository
 
         return new SyncDependencyEntity(
             id: $model->id,
-            syncProcessId: $model->sync_process_id,
+            processId: $model->sync_process_id,
             dependsOnProcessId: $model->depends_on_process_id,
             context: $model->context,
-            contextId: $model->context_id,
+            entityId: $model->entity_id,
             resolved: $model->resolved,
             resolvedAt: $model->resolved_at,
         );

@@ -5,7 +5,11 @@ namespace {{ namespace }};
 use Synchub\LaravelSynchub\Domain\Sync\Contracts\AfterSyncHandler;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
 
-class {{ name }}AfterSyncHandler extends AfterSyncHandler
+final class {{ name }}AfterSyncHandler extends AfterSyncHandler
 {
-    public function handle(SyncProcessEntity $process): void {}
+    public function handle(
+        SyncProcessEntity $process
+    ): void {
+        // Implementar ações após a sincronização.
+    }
 }

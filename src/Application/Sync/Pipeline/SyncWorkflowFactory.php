@@ -14,7 +14,6 @@ class SyncWorkflowFactory
     public function make(
         string $context,
     ): SyncWorkflow {
-
         return new SyncWorkflow(
             $this->syncProcess,
             Sync::context($context),

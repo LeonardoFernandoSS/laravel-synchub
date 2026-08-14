@@ -11,6 +11,7 @@ final readonly class StartBatchSync
         public string $context,
         public array $ids,
         public bool $force = false,
+        public int $chunkSize = 100,
         public ?SyncProcessEntity $parentProcess = null,
     ) {}
 }

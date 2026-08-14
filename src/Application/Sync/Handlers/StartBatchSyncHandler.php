@@ -2,20 +2,31 @@
 
 namespace Synchub\LaravelSynchub\Application\Sync\Handlers;
 
+use Illuminate\Support\Facades\Bus;
 use Synchub\LaravelSynchub\Application\Sync\Commands\StartBatchSync;
-use Synchub\LaravelSynchub\Jobs\DispatchBatchSync;
+use Synchub\LaravelSynchub\Application\Sync\Jobs\ProcessBatchSync;
 
-class StartBatchSyncHandler
+final class StartBatchSyncHandler
 {
-
     public function handle(
-        StartBatchSync $command
+        StartBatchSync $command,
     ): void {
-        DispatchBatchSync::dispatch(
-            context: $command->context,
-            ids: $command->ids,
-            force: $command->force,
-            parentProcess: $command->parentProcess,
+        $idChunks = array_chunk(
+            $command->ids,
+            $command->chunkSize
         );
+
+        $jobs = collect($idChunks)
+            ->map(fn (array $ids) => new ProcessBatchSync(
+                context: $command->context,
+                ids: $ids,
+                force: $command->force,
+                parentProcess: $command->parentProcess,
+            ))
+            ->all();
+
+        Bus::batch($jobs)
+            ->name("Sync {$command->context}")
+            ->dispatch();
     }
 }

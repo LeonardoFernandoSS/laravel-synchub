@@ -11,7 +11,7 @@ class MissingSyncDependencyException extends Exception
      * @param SyncDependencyData[] $dependencies
      */
     public function __construct(
-        public readonly array $dependencies
+        public readonly array $dependencies,
     ) {
         parent::__construct('Missing sync dependencies.');
     }

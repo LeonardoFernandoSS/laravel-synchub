@@ -4,18 +4,18 @@ namespace Synchub\LaravelSynchub\Domain\Sync\Entities;
 
 use DateTimeInterface;
 
-class SyncDependencyEntity
+final class SyncDependencyEntity
 {
     public function __construct(
         public readonly int $id,
 
-        public readonly int $syncProcessId,
+        public readonly int $processId,
 
         public readonly int $dependsOnProcessId,
 
         public readonly string $context,
 
-        public readonly int $contextId,
+        public readonly int $entityId,
 
         public bool $resolved = false,
 

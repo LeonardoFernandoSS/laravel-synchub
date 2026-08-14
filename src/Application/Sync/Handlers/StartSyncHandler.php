@@ -3,22 +3,27 @@
 namespace Synchub\LaravelSynchub\Application\Sync\Handlers;
 
 use Synchub\LaravelSynchub\Application\Sync\Commands\StartSync;
+use Synchub\LaravelSynchub\Application\Sync\Jobs\ProcessSync;
+use Synchub\LaravelSynchub\Application\Sync\Services\SyncProcessService;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
 
-class StartSyncHandler
+final class StartSyncHandler
 {
     public function __construct(
         private CreateSyncProcessHandler $createProcess,
-        private RunSyncWorkflowHandler $runWorkflow,
     ) {}
 
     public function handle(
-        StartSync $command
+        StartSync $command,
     ): SyncProcessEntity {
+        $process = $this->createProcess->handle(
+            $command,
+        );
 
-        $process = $this->createProcess->handle($command);
-
-        $this->runWorkflow->handle($process);
+        ProcessSync::dispatch(
+            $process->id,
+            config('synchub.queue.tries.default'),
+        );
 
         return $process;
     }

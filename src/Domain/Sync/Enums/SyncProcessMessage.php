@@ -6,22 +6,19 @@ enum SyncProcessMessage: string
 {
     // Execução
 
-    case PROCESSING_SYNC = 'Processando a sincronização.';
+    case SYNC_PROCESSING = 'Processando a sincronização.';
 
-    case SYNC_PAUSED_DEPENDENCIES = 'Sincronização pausada devido a dependências pendentes.';
+    case SYNC_PAUSED = 'Sincronização pausada devido a dependências pendentes.';
 
+    // Reexecução
 
-        // Reexecução
+    case SYNC_RERUN_STARTED = 'Reexecução da sincronização iniciada.';
 
-    case RERUN_STARTED = 'Reexecução da sincronização iniciada.';
+    // Lote
 
+    case SYNC_BATCH_DISPATCHED = 'Lote de sincronização enviado para processamento.';
 
-        // Lote
-
-    case BATCH_DISPATCHED = 'Lote de sincronização enviado para processamento.';
-
-
-        // Dependências
+    // Dependências
 
     case DEPENDENCY_PROCESS_CREATED = 'Processo de dependência criado.';
 
@@ -29,8 +26,7 @@ enum SyncProcessMessage: string
 
     case DEPENDENCY_REGISTERED = 'Dependência registrada.';
 
-
-        // Relacionamentos entre processos
+    // Relacionamentos entre processos
 
     case PROCESS_RELATION_CREATED = 'Relacionamento entre processos criado.';
 
@@ -40,10 +36,7 @@ enum SyncProcessMessage: string
 
     case PROCESS_RELATION_DEPENDENCY = 'Processo relacionado como dependência.';
 
-
-        // Processo
-
-        // Processo
+    // Processo
 
     case PROCESS_CREATED = 'Processo criado.';
 
@@ -51,84 +44,77 @@ enum SyncProcessMessage: string
 
     case PROCESSING_STARTED = 'Processamento iniciado.';
 
+    case PROCESSING_RESTARTED = 'Re-Processamento iniciado.';
+
     case PROCESS_RESUMED = 'Processo retomado após resolução das dependências.';
 
-    case PROCESS_SUCCESS = 'Sincronização finalizada com sucesso.';
+    case PROCESS_SUCCEEDED = 'Sincronização finalizada com sucesso.';
 
     case PROCESS_FAILED = 'Falha de negócio na sincronização.';
 
     case PROCESS_ERROR = 'Erro inesperado na sincronização.';
 
-    case PROCESS_OBSOLETE = 'Processo marcado como obsoleto.';
+    case PROCESS_OBSOLETED = 'Processo marcado como obsoleto.';
 
-
-        // Dependências
+    // Dependências
 
     case WAITING_DEPENDENCIES = 'Dependências pendentes detectadas.';
 
+    // Carregamento de dados
 
-        // Carregamento de dados
+    case LOADING_SOURCE_DATA = 'Carregando dados da origem.';
 
-    case LOADING_DATA = 'Carregando dados.';
+    case SOURCE_DATA_LOADED = 'Dados carregados da origem.';
 
-    case INTERNAL_DATA_LOADED = 'Dados carregados da API interna.';
+    case SOURCE_PAYLOAD_LOADED_FROM_CACHE = 'Payload da origem recuperado do cache.';
 
-    case INTERNAL_PAYLOAD_LOADED_FROM_CACHE = 'Payload interno recuperado do cache.';
+    case SOURCE_PAYLOAD_SAVED = 'Payload da origem salvo.';
 
-    case INTERNAL_PAYLOAD_SAVED = 'Payload interno salvo.';
+    // Validação
 
-
-        // Validação
-
-    case VALIDATING_DATA = 'Validando dados.';
+    case DATA_VALIDATING = 'Validando dados.';
 
     case DATA_VALIDATED = 'Dados validados.';
 
+    // Mapeamento
 
-        // Mapeamento
-
-    case MAPPING_DATA = 'Mapeando dados.';
+    case DATA_MAPPING = 'Mapeando dados.';
 
     case DATA_MAPPED = 'Dados mapeados.';
 
-    case MAPPED_PAYLOAD_SAVED = 'Payload mapeado salvo.';
+    case TARGET_PAYLOAD_SAVED = 'Payload do destino salvo.';
 
+    // Busca de mapeamento
 
-        // Busca de vínculo externo
+    case TARGET_MAPPING_FINDING = 'Buscando vínculo no destino.';
 
-    case FINDING_EXTERNAL_MAPPING = 'Buscando vínculo externo.';
+    case TARGET_MAPPING_FOUND = 'Vínculo no destino encontrado.';
 
-    case EXTERNAL_MAPPING_FOUND = 'Vínculo externo encontrado.';
+    case TARGET_MAPPING_NOT_FOUND = 'Vínculo no destino não encontrado.';
 
-    case EXTERNAL_MAPPING_NOT_FOUND = 'Vínculo externo não encontrado.';
+    // Sincronização
 
+    case TARGET_RECORD_CREATING = 'Criando registro no destino.';
 
-        // Sincronização externa
+    case TARGET_RECORD_UPDATING = 'Atualizando registro no destino.';
 
-    case CREATING_EXTERNAL_RECORD = 'Criando registro no sistema externo.';
+    case TARGET_RESPONSE_SAVED = 'Resposta do destino salva.';
 
-    case UPDATING_EXTERNAL_RECORD = 'Atualizando registro no sistema externo.';
+    // Persistência do mapeamento
 
-    case EXTERNAL_RESPONSE_SAVED = 'Resposta externa salva.';
+    case TARGET_MAPPING_SAVED = 'Vínculo com o destino salvo.';
 
+    case TARGET_ID_SENT_TO_SOURCE = 'ID do destino enviado para a origem.';
 
-        // Persistência de relacionamento
-
-    case EXTERNAL_MAPPING_SAVED = 'Vínculo salvo.';
-
-    case EXTERNAL_ID_SENT_TO_INTERNAL_API = 'ID externo enviado para API interna.';
-
-
-        // Otimizações
+    // Otimizações
 
     case SYNC_SKIPPED_NO_CHANGES = 'Sincronização ignorada. Dados sem alteração.';
 
+    // Pós-sincronização
 
-        // Pós sincronização
+    case AFTER_SYNC_STARTED = 'Executando ações pós-sincronização.';
 
-    case AFTER_SYNC_STARTED = 'Executando ações pós sincronização.';
-
-        // Eventos pós sincronização
+    // Eventos pós-sincronização
 
     case PRODUCT_SYNC_EVENT_DISPATCHED = 'Evento de produto sincronizado disparado.';
 }

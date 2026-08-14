@@ -2,36 +2,26 @@
 
 namespace Synchub\LaravelSynchub\Application\Sync\Handlers;
 
-use Synchub\LaravelSynchub\Application\Sync\Commands\ResumeSync;
 use Synchub\LaravelSynchub\Application\Sync\Pipeline\SyncWorkflowFactory;
 use Synchub\LaravelSynchub\Application\Sync\Services\SyncProcessService;
+use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
 
-class ResumeSyncHandler
+final class ResumeSyncHandler
 {
-
     public function __construct(
-        private SyncProcessService $processService,
         private SyncWorkflowFactory $workflowFactory,
     ) {}
 
-
     public function handle(
-        ResumeSync $command
+        SyncProcessEntity $process,
     ): void {
+        
+        if (!$process->isWaitingDependency()) {
+            return;
+        }
 
-        $process = $this->processService
-            ->findOrFail(
-                $command->processId
-            );
-
-
-        $workflow = $this->workflowFactory->make(
-            $process->context
-        );
-
-
-        $workflow->resume(
-            $process->id
-        );
+        $this->workflowFactory
+            ->make($process->context)
+            ->resume($process->id);
     }
 }

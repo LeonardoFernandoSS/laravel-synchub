@@ -3,7 +3,7 @@
 namespace Synchub\LaravelSynchub\Infrastructure\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Synchub\LaravelSynchub\Console\Commands\MakeSyncContextCommand;
+use Synchub\LaravelSynchub\Console\Commands\MakeSynchubCommand;
 
 class LaravelSynchubServiceProvider extends ServiceProvider
 {
@@ -29,7 +29,7 @@ class LaravelSynchubServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
 
             $this->commands([
-                MakeSyncContextCommand::class,
+                MakeSynchubCommand::class,
             ]);
         }
     }

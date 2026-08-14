@@ -1,0 +1,28 @@
+<?php
+
+namespace {{ namespace }};
+
+use Synchub\LaravelSynchub\Domain\Sync\Contracts\TargetGateway;
+use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncData;
+use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncResultData;
+use Synchub\LaravelSynchub\Domain\Sync\Entities\MappingEntity;
+
+final class {{ name }}TargetGateway implements TargetGateway
+{
+    public function create(
+        SyncData $data
+    ): SyncResultData {
+        throw new \LogicException(
+            'Implement {{ name }}TargetGateway::create().'
+        );
+    }
+
+    public function update(
+        MappingEntity $mapping,
+        SyncData $data
+    ): SyncResultData {
+        throw new \LogicException(
+            'Implement {{ name }}TargetGateway::update().'
+        );
+    }
+}

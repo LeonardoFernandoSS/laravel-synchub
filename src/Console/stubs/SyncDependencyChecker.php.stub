@@ -1,0 +1,18 @@
+<?php
+
+namespace {{ namespace }};
+
+use Synchub\LaravelSynchub\Domain\Sync\Contracts\SyncDependencyChecker;
+use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncDependencyData;
+
+final class {{ name }}SyncDependencyChecker implements SyncDependencyChecker
+{
+    /**
+     * @return SyncDependencyData[]
+     */
+    public function check(
+        array $sourcePayload
+    ): array {
+        return [];
+    }
+}

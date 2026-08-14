@@ -5,26 +5,17 @@ namespace {{ namespace }};
 use Synchub\LaravelSynchub\Domain\Sync\Context\SyncContext;
 use Synchub\LaravelSynchub\Domain\Sync\Contracts\MappingRepository;
 
-class {{ name }}SyncContext extends SyncContext
+final class {{ name }}SyncContext extends SyncContext
 {
     public function __construct(
-        {{ name }}InternalGateway $internal,
-        {{ name }}ExternalGateway $external,
-        {{ name }}Mapper $mapper,
-        {{ name }}Validator $validator,
-        {{ name }}DependencyChecker $dependencies,
-        {{ name }}AfterSyncHandler $afterSync,
+        {{ name }}SourceGateway $source,
+        {{ name }}TargetGateway $target,
+        MappingRepository $repository,
     ) {
-
         parent::__construct(
-            internal: $internal,
-            external: $external,
-            mapping: app(MappingRepository::class),
-            mapper: $mapper,
-            validator: $validator,
-            dependencies: $dependencies,
-            afterSync: $afterSync,
+            source: $source,
+            target: $target,
+            repository: $repository,
         );
-
     }
 }

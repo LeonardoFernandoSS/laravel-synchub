@@ -6,34 +6,72 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('sync_processes', function (Blueprint $table) {
-
             $table->id();
-            $table->string('type');
-            $table->string('context');
-            $table->unsignedBigInteger('context_id');
-            $table->string('status')->default('pending');
-            $table->string('current_step');
+
+            /*
+             * Identidade da sincronização
+             */
+            $table->string('context', 150);
+            $table->unsignedBigInteger('entity_id');
+
+            /*
+             * Estado
+             */
+            $table->string('status', 32)->default('pending');
+            $table->string('current_step', 64);
+
+            /*
+             * Opções de execução
+             */
             $table->boolean('force')->default(false);
-            $table->json('mapped_payload')->nullable();
+
+            /*
+             * Dados da sincronização
+             */
+            $table->json('source_payload')->nullable();
+            $table->json('target_payload')->nullable();
+            $table->json('target_response')->nullable();
+
+            /*
+             * Erro
+             */
+            $table->json('error')->nullable();
+
+            /*
+             * Cache do payload de origem
+             */
             $table->timestamp('payload_cached_at')->nullable();
-            $table->json('internal_payload')->nullable();
-            $table->json('external_response')->nullable();
-            $table->json('error')->nullable();          
+
+            /*
+             * Controle do ciclo de vida
+             */
             $table->timestamp('started_at')->nullable();
+            $table->timestamp('resumed_at')->nullable();
             $table->timestamp('finished_at')->nullable();
+
             $table->timestamps();
+
+            /*
+             * Identidade da sincronização.
+             */
+            $table->index(
+                ['context', 'entity_id'],
+                'sync_processes_identity_index'
+            );
+
+            /*
+             * Busca de processos ativos.
+             */
+            $table->index(
+                ['context', 'entity_id', 'status'],
+                'sync_processes_status_index'
+            );
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('sync_processes');

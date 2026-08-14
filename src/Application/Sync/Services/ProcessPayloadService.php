@@ -9,90 +9,78 @@ use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessMessage;
 class ProcessPayloadService
 {
     public function __construct(
-        protected SyncProcessRepository $repository,
+        protected SyncProcessRepository $processRepository,
         private ProcessLogService $logService,
     ) {}
 
-
-    public function saveInternalPayload(
+    public function saveSourcePayload(
         SyncProcessEntity $process,
-        array $payload
+        array $payload,
     ): void {
+        $cachedAt = now();
 
-        $this->repository->update(
+        $this->processRepository->update(
             $process,
             [
-                'internal_payload' => $payload,
-                'payload_cached_at' => now(),
+                'source_payload' => $payload,
+                'payload_cached_at' => $cachedAt,
             ]
         );
 
-
-        $process->internalPayload = $payload;
-        $process->payloadCachedAt = now();
-
+        $process->sourcePayload = $payload;
+        $process->payloadCachedAt = $cachedAt;
 
         $this->logService->log(
             $process,
-            SyncProcessMessage::INTERNAL_PAYLOAD_SAVED,
-            $payload
+            SyncProcessMessage::SOURCE_PAYLOAD_SAVED,
+            $payload,
         );
     }
 
-
-    public function saveMappedPayload(
+    public function saveTargetPayload(
         SyncProcessEntity $process,
-        array $payload
+        array $payload,
     ): void {
-
-        $this->repository->update(
+        $this->processRepository->update(
             $process,
             [
-                'mapped_payload' => $payload,
+                'target_payload' => $payload,
             ]
         );
 
-
-        $process->mappedPayload = $payload;
-
+        $process->targetPayload = $payload;
 
         $this->logService->log(
             $process,
-            SyncProcessMessage::MAPPED_PAYLOAD_SAVED,
-            $payload
+            SyncProcessMessage::TARGET_PAYLOAD_SAVED,
+            $payload,
         );
     }
 
-
-    public function saveExternalResponse(
+    public function saveTargetResponse(
         SyncProcessEntity $process,
-        array $response
+        array $response,
     ): void {
-
-        $this->repository->update(
+        $this->processRepository->update(
             $process,
             [
-                'external_response' => $response,
+                'target_response' => $response,
             ]
         );
 
-
-        $process->externalResponse = $response;
-
+        $process->targetResponse = $response;
 
         $this->logService->log(
             $process,
-            SyncProcessMessage::EXTERNAL_RESPONSE_SAVED,
-            $response
+            SyncProcessMessage::TARGET_RESPONSE_SAVED,
+            $response,
         );
     }
 
-
-    public function canReuseInternalPayload(
-        SyncProcessEntity $process
+    public function canReuseSourcePayload(
+        SyncProcessEntity $process,
     ): bool {
-
-        if (!$process->internalPayload) {
+        if (!$this->hasSourcePayload($process)) {
             return false;
         }
 
@@ -101,21 +89,38 @@ class ProcessPayloadService
         }
 
         return $process->payloadCachedAt->getTimestamp()
-            > time() - (10 * 60);
+            > now()->subMinutes(10)->getTimestamp();
     }
 
-    private function hasInternalPayload(
-        SyncProcessEntity $process
+    public function hasSourcePayload(
+        SyncProcessEntity $process,
     ): bool {
-
-        return !empty($process->internalPayload);
+        return !empty($process->sourcePayload);
     }
 
-
-    public function getInternalPayload(
-        SyncProcessEntity $process
+    public function getSourcePayload(
+        SyncProcessEntity $process,
     ): array {
 
-        return $process->internalPayload;
+        $this->logService->log(
+            $process,
+            SyncProcessMessage::SOURCE_PAYLOAD_LOADED_FROM_CACHE,
+            $process->sourcePayload,
+        );
+
+        return $process->sourcePayload;
+    }
+
+    public function invalidateSourcePayload(
+        SyncProcessEntity $process,
+    ): void {
+        $this->processRepository->update(
+            $process,
+            [
+                'payload_cached_at' => null,
+            ],
+        );
+        
+        $process->payloadCachedAt = null;
     }
 }

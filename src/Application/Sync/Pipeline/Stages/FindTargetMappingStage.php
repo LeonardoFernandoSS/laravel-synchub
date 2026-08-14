@@ -1,0 +1,56 @@
+<?php
+
+namespace Synchub\LaravelSynchub\Application\Sync\Pipeline\Stages;
+
+use Closure;
+use Synchub\LaravelSynchub\Application\Sync\Pipeline\SyncExecution;
+use Synchub\LaravelSynchub\Application\Sync\Services\SyncProcessService;
+use Synchub\LaravelSynchub\Domain\Sync\Contracts\SyncStage;
+use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessMessage;
+use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStep;
+
+class FindTargetMappingStage implements SyncStage
+{
+    public function __construct(
+        private SyncProcessService $processService,
+    ) {}
+
+    public function handle(
+        SyncExecution $execution,
+        Closure $next,
+    ): mixed {
+        $process = $execution->process;
+
+        $this->processService->step(
+            $process,
+            SyncProcessStep::FIND_TARGET_MAPPING,
+            SyncProcessMessage::TARGET_MAPPING_FINDING,
+        );
+
+        $execution->mapping = $execution
+            ->context
+            ->repository
+            ->findBySourceId(
+                $process->context,
+                $process->entityId,
+            );
+
+        if ($execution->mapping === null) {
+            $this->processService->log(
+                $process,
+                SyncProcessMessage::TARGET_MAPPING_NOT_FOUND,
+            );
+        } else {
+            $this->processService->log(
+                $process,
+                SyncProcessMessage::TARGET_MAPPING_FOUND,
+                [
+                    'target_id' => $execution->mapping->targetId,
+                    'payload_hash' => $execution->mapping->payloadHash,
+                ],
+            );
+        }
+
+        return $next($execution);
+    }
+}

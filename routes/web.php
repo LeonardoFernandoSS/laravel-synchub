@@ -3,11 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use Synchub\LaravelSynchub\Http\Controllers\SyncController;
 
-Route::get('/sync-processes', [SyncController::class, 'index'])
-    ->name('sync-processes.index');
+Route::get('/synchub', [SyncController::class, 'index'])
+    ->name('synchub.index');
 
-Route::get('/sync-processes/{id}', [SyncController::class, 'show'])
-    ->name('sync-processes.show');
+Route::get('/synchub/{id}', [SyncController::class, 'show'])
+    ->name('synchub.show');
 
-Route::post('/sync-processes/{id}/rerun', [SyncController::class, 'rerun'])
-    ->name('sync-processes.rerun');
+Route::get('/synchub/{id}/status', [SyncController::class, 'status'])
+    ->name('synchub.status');
+
+Route::post('/synchub/{id}/rerun', [SyncController::class, 'rerun'])
+    ->name('synchub.rerun');

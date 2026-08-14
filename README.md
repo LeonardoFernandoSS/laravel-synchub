@@ -125,7 +125,7 @@ O pacote disponibiliza comandos CLI para ajudar no gerenciamento da infraestrutu
 php artisan synchub:status
 
 # Tenta reexecutar um processo específico que falhou
-php artisan synchub:retry {process_id}
+php artisan synchub:retry {sync_process_id}
 
 # Limpa logs antigos de transações concluídas com sucesso
 php artisan synchub:clear --days=30
