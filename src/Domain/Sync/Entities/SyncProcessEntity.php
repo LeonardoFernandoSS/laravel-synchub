@@ -35,11 +35,6 @@ final class SyncProcessEntity
         public ?\DateTimeInterface $finishedAt = null,
     ) {}
 
-    public function isWaitingDependency(): bool
-    {
-        return $this->status === SyncProcessStatus::WAITING_DEPENDENCY;
-    }
-
     public function isRunnable(): bool
     {
         return in_array(

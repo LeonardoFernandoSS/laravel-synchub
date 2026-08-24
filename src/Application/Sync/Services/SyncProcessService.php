@@ -55,12 +55,6 @@ final class SyncProcessService
         );
     }
 
-    public function resume(
-        SyncProcessEntity $process,
-    ): void {
-        $this->lifecycle->resume($process);
-    }
-
     public function processing(
         SyncProcessEntity $process,
     ): void {

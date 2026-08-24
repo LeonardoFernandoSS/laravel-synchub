@@ -92,8 +92,6 @@ final class ProcessLifecycleService
             ]);
         });
 
-        // $this->processing($process);
-
         return $process;
     }
 
@@ -140,25 +138,6 @@ final class ProcessLifecycleService
     }
 
     /**
-     * WAITING_DEPENDENCY → PROCESSING
-     */
-    public function resume(
-        SyncProcessEntity $process,
-    ): void {
-        if ($process->status !== SyncProcessStatus::WAITING_DEPENDENCY) {
-            throw new DomainException(
-                sprintf(
-                    'Process [%s] cannot be resumed from status [%s].',
-                    $process->id,
-                    $process->status->value,
-                )
-            );
-        }
-
-        $this->processing($process);
-    }
-
-    /**
      * PENDING → PROCESSING
      *
      * WAITING_DEPENDENCY → PROCESSING
@@ -174,9 +153,6 @@ final class ProcessLifecycleService
 
             SyncProcessStatus::WAITING_DEPENDENCY =>
             SyncProcessMessage::PROCESS_RESUMED,
-
-            SyncProcessStatus::ERROR =>
-            SyncProcessMessage::PROCESSING_RESTARTED,
 
             SyncProcessStatus::PROCESSING =>
             SyncProcessMessage::PROCESSING_RESTARTED,
@@ -299,12 +275,6 @@ final class ProcessLifecycleService
                 'error' => $error,
                 'finished_at' => now(),
             ],
-        );
-
-        $this->logService->log(
-            $process,
-            SyncProcessMessage::PROCESS_ERROR,
-            $error,
         );
     }
 

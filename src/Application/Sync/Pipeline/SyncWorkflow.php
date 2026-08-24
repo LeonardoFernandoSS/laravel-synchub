@@ -12,7 +12,7 @@ use Synchub\LaravelSynchub\Application\Sync\Pipeline\Stages\SynchronizeStage;
 use Synchub\LaravelSynchub\Application\Sync\Pipeline\Stages\ValidateSourceDataStage;
 use Synchub\LaravelSynchub\Application\Sync\Services\SyncProcessService;
 use Synchub\LaravelSynchub\Domain\Sync\Context\SyncContext;
-use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus;
+use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessMessage;
 use Synchub\LaravelSynchub\Domain\Sync\Exceptions\BusinessException;
 use Synchub\LaravelSynchub\Domain\Sync\Exceptions\MissingSyncDependencyException;
 use Throwable;
@@ -27,7 +27,7 @@ class SyncWorkflow
     public function resume(int $processId): void
     {
         $syncProcess = $this->process->findOrFail($processId);
-    
+
         if (!$syncProcess->isRunnable()) {
             return;
         }
@@ -53,7 +53,6 @@ class SyncWorkflow
                 ])
                 ->thenReturn();
         } catch (MissingSyncDependencyException $exception) {
-
             $this->process->waitingDependency(
                 $syncProcess,
                 $exception->dependencies,
@@ -64,6 +63,15 @@ class SyncWorkflow
                 $exception,
             );
         } catch (Throwable $exception) {
+
+            $this->process->log(
+                $syncProcess,
+                SyncProcessMessage::PROCESS_ERROR,
+                [
+                    'message' => $exception->getMessage(),
+                ]
+            );
+
             throw $exception;
         }
     }

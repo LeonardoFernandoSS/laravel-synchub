@@ -3,7 +3,7 @@
 namespace Synchub\LaravelSynchub\Application\Sync\Listeners;
 
 use Synchub\LaravelSynchub\Application\Sync\Events\ProcessDependenciesResolved;
-use Synchub\LaravelSynchub\Application\Sync\Jobs\ResumeProcessSync;
+use Synchub\LaravelSynchub\Application\Sync\Jobs\ProcessSync;
 
 final class ResumeWaitingProcess
 {
@@ -11,7 +11,7 @@ final class ResumeWaitingProcess
         ProcessDependenciesResolved $event,
     ): void {
 
-        ResumeProcessSync::dispatch(
+        ProcessSync::dispatch(
             $event->process->id,
             config('synchub.queue.tries.default'),
         );

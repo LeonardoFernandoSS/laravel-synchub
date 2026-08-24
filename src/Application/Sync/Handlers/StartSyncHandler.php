@@ -4,7 +4,6 @@ namespace Synchub\LaravelSynchub\Application\Sync\Handlers;
 
 use Synchub\LaravelSynchub\Application\Sync\Commands\StartSync;
 use Synchub\LaravelSynchub\Application\Sync\Jobs\ProcessSync;
-use Synchub\LaravelSynchub\Application\Sync\Services\SyncProcessService;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
 
 final class StartSyncHandler

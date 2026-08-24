@@ -3,7 +3,6 @@
 namespace Synchub\LaravelSynchub\Application\Sync\Handlers;
 
 use Synchub\LaravelSynchub\Application\Sync\Commands\StartSync;
-use Synchub\LaravelSynchub\Application\Sync\Services\ProcessLogService;
 use Synchub\LaravelSynchub\Application\Sync\Services\SyncProcessRelationService;
 use Synchub\LaravelSynchub\Application\Sync\Services\SyncProcessService;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
@@ -13,7 +12,6 @@ final class CreateSyncProcessHandler
     public function __construct(
         private SyncProcessService $processService,
         private SyncProcessRelationService $relationService,
-        private ProcessLogService $logService,
     ) {}
 
     public function handle(

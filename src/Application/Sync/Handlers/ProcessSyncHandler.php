@@ -3,7 +3,6 @@
 namespace Synchub\LaravelSynchub\Application\Sync\Handlers;
 
 use Synchub\LaravelSynchub\Application\Sync\Pipeline\SyncWorkflowFactory;
-use Synchub\LaravelSynchub\Application\Sync\Services\SyncProcessService;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
 
 final class ProcessSyncHandler

@@ -18,6 +18,7 @@ enum SyncProcessStatus: string
             self::PENDING => in_array($to, [
                 self::PROCESSING,
                 self::OBSOLETE,
+                self::ERROR,
             ], true),
 
             self::PROCESSING => in_array($to, [
