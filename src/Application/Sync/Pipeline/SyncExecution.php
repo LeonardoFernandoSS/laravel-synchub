@@ -15,7 +15,7 @@ class SyncExecution
         public SyncContext $context,
     ) {}
 
-    public array $sourcePayload = [];
+    public ?array $sourcePayload = null;
 
     public ?SyncData $targetData = null;
 
