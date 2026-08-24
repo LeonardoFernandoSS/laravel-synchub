@@ -51,6 +51,10 @@ class LoadSourceDataStage implements SyncStage
             ->source
             ->find($process->sourceId);
 
+        if (!$execution->sourcePayload) {
+            throw new BusinessException('Recurso não encontrado');
+        }
+
         $this->processService->saveSourcePayload(
             $process,
             $execution->sourcePayload,
