@@ -4,10 +4,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Processos de Sincronização</title>
 
     <!-- Chamada correta do Vite para carregar seu Tailwind v4 local -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        .process-checkbox,
+        #select-all {
+            position: relative;
+        }
+
+        .process-checkbox:checked,
+        #select-all:checked {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.5L6.5 11.5L12.5 4.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-size: 14px 14px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        #select-all:indeterminate {
+            background-color: rgb(79 70 229);
+            border-color: rgb(79 70 229);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 8H12' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-size: 12px 12px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
+
 </head>
 
 <body class="bg-slate-50 text-slate-900 antialiased min-h-screen p-6 sm:p-10 dark:bg-slate-900 dark:text-slate-100">
@@ -154,10 +180,10 @@
 
                 {{-- Mantém o status selecionado --}}
                 @if($status)
-                    <input
-                        type="hidden"
-                        name="status"
-                        value="{{ $status }}">
+                <input
+                    type="hidden"
+                    name="status"
+                    value="{{ $status }}">
                 @endif
 
                 {{-- Contexto --}}
@@ -181,11 +207,11 @@
                         </option>
 
                         @foreach($contexts as $item)
-                            <option
-                                value="{{ $item }}"
-                                @selected($context === $item)>
-                                {{ $item }}
-                            </option>
+                        <option
+                            value="{{ $item }}"
+                            @selected($context===$item)>
+                            {{ $item }}
+                        </option>
                         @endforeach
 
                     </select>
@@ -212,11 +238,11 @@
                         </option>
 
                         @foreach($steps as $item)
-                            <option
-                                value="{{ $item->value }}"
-                                @selected($step === $item->value)>
-                                {{ $item->label() }}
-                            </option>
+                        <option
+                            value="{{ $item->value }}"
+                            @selected($step===$item->value)>
+                            {{ $item->label() }}
+                        </option>
                         @endforeach
 
                     </select>
@@ -260,9 +286,9 @@
 
                     @if($status || $context || $step || $sourceId)
 
-                        <a
-                            href="{{ route('synchub.index') }}"
-                            class="flex-1 inline-flex items-center justify-center
+                    <a
+                        href="{{ route('synchub.index') }}"
+                        class="flex-1 inline-flex items-center justify-center
                                 px-4 py-2 rounded-lg
                                 border border-slate-200
                                 dark:border-slate-700
@@ -270,8 +296,8 @@
                                 text-slate-600 dark:text-slate-300
                                 hover:bg-slate-50 dark:hover:bg-slate-700
                                 whitespace-nowrap">
-                            Limpar
-                        </a>
+                        Limpar
+                    </a>
 
                     @endif
 
@@ -279,6 +305,50 @@
 
             </form>
         </div>
+
+        <div
+            id="bulk-actions"
+            class="hidden mb-4 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/50 rounded-xl px-4 py-3">
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+                <div class="text-sm text-indigo-700 dark:text-indigo-300">
+                    <span
+                        id="selected-count"
+                        class="font-bold">
+                        0
+                    </span>
+
+                    processos selecionados
+                </div>
+
+                <button
+                    type="button"
+                    id="bulk-rerun-button"
+                    class="inline-flex items-center justify-center px-4 py-2 rounded-lg
+                        bg-indigo-600 text-white text-sm font-semibold
+                        hover:bg-indigo-700
+                        disabled:opacity-50 disabled:cursor-not-allowed">
+
+                    Tentar novamente selecionados
+                </button>
+            </div>
+        </div>
+
+        @php
+            $rerunnableStatuses = [
+                'success',
+                'failed',
+                'error',
+                'obsolete',
+            ];
+
+            $canRerun = in_array(
+                request()->query('status'),
+                $rerunnableStatuses,
+                true
+            );
+        @endphp
 
         {{-- Tabela --}}
         <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
@@ -288,6 +358,37 @@
 
                     <thead class="bg-slate-50 dark:bg-slate-700/50 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                         <tr>
+                            @if($canRerun)
+                                <th scope="col" class="px-4 py-4 w-12 text-center">
+                                    <input
+                                        type="checkbox"
+                                        id="select-all"
+                                        class="
+                                            peer
+                                            relative
+                                            appearance-none
+                                            w-5 h-5
+                                            rounded-md
+                                            border-2 border-slate-300
+                                            dark:border-slate-600
+                                            bg-white dark:bg-slate-800
+                                            cursor-pointer
+                                            transition-all duration-150
+                                            hover:border-indigo-400
+                                            hover:bg-indigo-50
+                                            dark:hover:border-indigo-500
+                                            dark:hover:bg-indigo-950/30
+                                            checked:bg-indigo-600
+                                            checked:border-indigo-600
+                                            focus:outline-none
+                                            focus:ring-2
+                                            focus:ring-indigo-500/30
+                                            focus:ring-offset-1
+                                            dark:focus:ring-offset-slate-800
+                                        "
+                                    >
+                                </th>
+                            @endif
                             <th scope="col" class="px-6 py-4 w-16">
                                 ID
                             </th>
@@ -323,6 +424,46 @@
                         @forelse($processes as $process)
 
                         <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-700/30 transition-colors">
+
+                            @if($canRerun)
+                                <td class="px-4 py-4 text-center">
+                                    @if(in_array($process->status?->value, [
+                                    'success',
+                                    'failed',
+                                    'error',
+                                    'obsolete',
+                                    ], true))
+
+                                    <input
+                                        type="checkbox"
+                                        name="process_ids[]"
+                                        value="{{ $process->id }}"
+                                        class="
+                                            process-checkbox
+                                            appearance-none
+                                            w-5 h-5
+                                            rounded-md
+                                            border-2 border-slate-300
+                                            dark:border-slate-600
+                                            bg-white dark:bg-slate-800
+                                            cursor-pointer
+                                            transition-all duration-150
+                                            hover:border-indigo-400
+                                            hover:bg-indigo-50
+                                            dark:hover:border-indigo-500
+                                            dark:hover:bg-indigo-950/30
+                                            checked:bg-indigo-600
+                                            checked:border-indigo-600
+                                            focus:outline-none
+                                            focus:ring-2
+                                            focus:ring-indigo-500/30
+                                            focus:ring-offset-1
+                                            dark:focus:ring-offset-slate-800
+                                        "
+                                    >
+                                    @endif
+                                </td>
+                            @endif
 
                             {{-- ID --}}
                             <td class="px-6 py-4 text-slate-400 dark:text-slate-500 font-mono">
@@ -467,6 +608,177 @@
 
         </div>
     </div>
+
+    <script>
+        const selectAll = document.getElementById('select-all');
+
+        const processCheckboxes = Array.from(
+            document.querySelectorAll('.process-checkbox')
+        );
+
+        const bulkActions = document.getElementById('bulk-actions');
+        const selectedCount = document.getElementById('selected-count');
+        const bulkRerunButton = document.getElementById('bulk-rerun-button');
+
+        function getSelectedIds() {
+            return processCheckboxes
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.value);
+        }
+
+        function updateBulkActions() {
+
+            const selectedIds = getSelectedIds();
+
+            const count = selectedIds.length;
+
+            if (selectedCount) {
+                selectedCount.textContent = count;
+            }
+
+            if (bulkActions) {
+
+                if (count > 0) {
+                    bulkActions.classList.remove('hidden');
+                } else {
+                    bulkActions.classList.add('hidden');
+                }
+            }
+
+            if (bulkRerunButton) {
+                bulkRerunButton.disabled = count === 0;
+            }
+
+            if (selectAll) {
+
+                const total = processCheckboxes.length;
+
+                selectAll.checked =
+                    total > 0 &&
+                    count === total;
+
+                selectAll.indeterminate =
+                    count > 0 &&
+                    count < total;
+            }
+        }
+
+        /*
+         * Selecionar todos
+         */
+        selectAll?.addEventListener('change', function() {
+
+            processCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+
+            updateBulkActions();
+        });
+
+        /*
+         * Seleção individual
+         */
+        processCheckboxes.forEach(checkbox => {
+
+            checkbox.addEventListener(
+                'change',
+                updateBulkActions
+            );
+
+        });
+
+        /*
+         * Rerun em lote
+         */
+        bulkRerunButton?.addEventListener('click', async function() {
+
+            const ids = getSelectedIds();
+
+            if (ids.length === 0) {
+                return;
+            }
+
+            const confirmed = confirm(
+                `Deseja tentar novamente ${ids.length} processo(s) selecionado(s)?`
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            bulkRerunButton.disabled = true;
+
+            const originalText =
+                bulkRerunButton.textContent;
+
+            bulkRerunButton.textContent =
+                'Iniciando...';
+
+            try {
+
+                const response = await fetch(
+                    @json(route('synchub.rerun.batch')), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+
+                            'X-CSRF-TOKEN': document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content'),
+                        },
+                        body: JSON.stringify({
+                            ids: ids,
+                        }),
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message ??
+                        'Não foi possível executar o rerun.'
+                    );
+                }
+
+                /*
+                 * Limpa seleção
+                 */
+                processCheckboxes.forEach(
+                    checkbox => checkbox.checked = false
+                );
+
+                updateBulkActions();
+
+                /*
+                 * Atualiza a lista
+                 */
+                window.location.reload();
+
+            } catch (error) {
+
+                console.error(
+                    'Erro no rerun em lote:',
+                    error
+                );
+
+                alert(
+                    error.message ??
+                    'Erro ao tentar novamente os processos.'
+                );
+
+                bulkRerunButton.disabled = false;
+
+                bulkRerunButton.textContent =
+                    originalText;
+            }
+        });
+
+        updateBulkActions();
+    </script>
 
 </body>
 

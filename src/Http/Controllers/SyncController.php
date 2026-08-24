@@ -112,6 +112,48 @@ class SyncController extends Controller
         ));
     }
 
+    public function rerunBatch(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+
+            'ids.*' => [
+                'integer',
+                'exists:sync_processes,id',
+            ],
+        ]);
+
+        $processes = SyncProcess::query()
+            ->whereIn('id', $validated['ids'])
+            ->get();
+
+        $rerunIds = [];
+
+        foreach ($processes as $process) {
+
+            if (!$this->canRerun($process)) {
+                continue;
+            }
+
+            $rerun = $this->rerunSyncHandler->handle(
+                $process->id
+            );
+
+            $rerunIds[] = $rerun->id;
+        }
+
+        return response()->json([
+            'status' => 'queued',
+            'total' => count($rerunIds),
+            'ids' => $rerunIds,
+        ]);
+    }
+
+
     public function show(int $id)
     {
         $process = SyncProcess::with([
@@ -183,17 +225,10 @@ class SyncController extends Controller
     {
         $process = SyncProcess::findOrFail($id);
 
-        abort_if(
-            in_array(
-                $process->status->value,
-                [
-                    'processing',
-                    'pending',
-                    'waiting_dependency',
-                ]
-            ),
+        abort_unless(
+            $this->canRerun($process),
             422,
-            'Processo ainda em execução.'
+            'Processo não pode ser executado novamente.'
         );
 
         $rerun = $this->rerunSyncHandler->handle($process->id);
@@ -259,5 +294,19 @@ class SyncController extends Controller
             'status' => 'queued',
             'total' => count($request->ids),
         ]);
+    }
+
+    private function canRerun(SyncProcess $process): bool
+    {
+        return in_array(
+            $process->status?->value,
+            [
+                'success',
+                'failed',
+                'error',
+                'obsolete',
+            ],
+            true
+        );
     }
 }
