@@ -8,7 +8,8 @@ use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncData;
 final class {{ name }}SyncMapper implements SyncMapper
 {
     public function map(
-        array $data
+        array $data,
+        array $lastPayload,
     ): SyncData {
         $payload = [];
 

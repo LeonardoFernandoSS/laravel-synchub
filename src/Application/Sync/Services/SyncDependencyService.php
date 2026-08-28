@@ -7,6 +7,7 @@ use Synchub\LaravelSynchub\Application\Sync\Events\DependencyResolved;
 use Synchub\LaravelSynchub\Domain\Sync\Contracts\SyncDependencyRepository;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncDependencyEntity;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\SourceIdentity;
 
 final class SyncDependencyService
 {
@@ -50,13 +51,13 @@ final class SyncDependencyService
         SyncProcessEntity $process,
         SyncProcessEntity $dependencyProcess,
         string $context,
-        mixed $sourceId,
+        SourceIdentity $sourceIdentity,
     ): SyncDependencyEntity {
         return $this->repository->create(
             $process,
             $dependencyProcess,
             $context,
-            $sourceId,
+            $sourceIdentity,
         );
     }
 }

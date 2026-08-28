@@ -24,12 +24,12 @@ final class SyncProcessService
 
     public function start(
         string $context,
-        mixed $sourceId,
+        mixed $identity,
         bool $force = false,
     ): SyncProcessEntity {
         return $this->lifecycle->start(
             $context,
-            $sourceId,
+            $identity,
             $force,
         );
     }

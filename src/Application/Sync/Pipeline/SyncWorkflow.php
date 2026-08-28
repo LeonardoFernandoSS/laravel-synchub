@@ -46,8 +46,8 @@ class SyncWorkflow
                     LoadSourceDataStage::class,
                     CheckDependenciesStage::class,
                     ValidateSourceDataStage::class,
-                    MapDataStage::class,
                     FindTargetMappingStage::class,
+                    MapDataStage::class,                    
                     SynchronizeStage::class,
                     FinishProcessStage::class,
                 ])

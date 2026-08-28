@@ -32,7 +32,10 @@ class MapDataStage implements SyncStage
         $targetData = $execution
             ->context
             ->mapper
-            ?->map($sourcePayload);
+            ?->map(
+                $sourcePayload,
+                $execution->mapping->lastPayload
+            );
 
         if ($targetData === null) {
             $targetData = new SyncData(

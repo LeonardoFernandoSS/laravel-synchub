@@ -4,6 +4,7 @@ namespace Synchub\LaravelSynchub\Domain\Sync\Entities;
 
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStep;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\SourceIdentity;
 
 final class SyncProcessEntity
 {
@@ -12,7 +13,7 @@ final class SyncProcessEntity
 
         public string $context,
 
-        public mixed $sourceId,
+        public SourceIdentity $sourceIdentity,
 
         public SyncProcessStatus $status,
 

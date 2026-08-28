@@ -9,13 +9,18 @@ class SyncMapping extends Model
 {
     protected $fillable = [
         'source_type',
-        'source_id',
-        'target_id',
+        'source_key',
+        'source_identity',
+        'target_key',
+        'target_identity',
         'payload_hash',
+        'last_payload',
     ];
 
     protected $casts = [
-        'source_id' => 'integer',
+        'source_identity' => 'array',
+        'target_identity' => 'array',
+        'last_payload' => 'array',
     ];
 
     public function source(): MorphTo

@@ -8,15 +8,19 @@ use Illuminate\Foundation\Queue\Queueable;
 use Synchub\LaravelSynchub\Application\Sync\Commands\StartSync;
 use Synchub\LaravelSynchub\Application\Sync\Handlers\StartSyncHandler;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\SourceIdentity;
 
-class ProcessBatchSync implements ShouldQueue
+final class ProcessBatchSync implements ShouldQueue
 {
     use Queueable;
     use Batchable;
 
+    /**
+     * @param SourceIdentity[] $identities
+     */
     public function __construct(
         public string $context,
-        public array $ids,
+        public array $identities,
         public bool $force,
         public ?SyncProcessEntity $parentProcess = null,
     ) {}
@@ -24,14 +28,14 @@ class ProcessBatchSync implements ShouldQueue
     public function handle(
         StartSyncHandler $handler,
     ): void {
-        foreach ($this->ids as $id) {
+        foreach ($this->identities as $identity) {
             $handler->handle(
                 new StartSync(
                     context: $this->context,
-                    sourceId: $id,
+                    identity: $identity,
                     force: $this->force,
                     parentProcess: $this->parentProcess,
-                )
+                ),
             );
         }
     }

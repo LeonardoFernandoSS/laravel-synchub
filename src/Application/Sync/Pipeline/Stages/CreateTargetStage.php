@@ -9,7 +9,7 @@ use Synchub\LaravelSynchub\Domain\Sync\Contracts\SyncStage;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessMessage;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStep;
 
-class CreateTargetStage implements SyncStage
+final class CreateTargetStage implements SyncStage
 {
     public function __construct(
         private SyncProcessService $processService,
@@ -21,6 +21,7 @@ class CreateTargetStage implements SyncStage
     ): mixed {
         $process = $execution->process;
         $targetData = $execution->targetData;
+        $identity = $process->sourceIdentity;
 
         $this->processService->step(
             $process,
@@ -46,17 +47,18 @@ class CreateTargetStage implements SyncStage
         $execution->context
             ->repository
             ->create(
-                $process->context,
-                $process->sourceId,
-                $response,
-                $targetData,
+                context: $process->context,
+                identity: $identity,
+                response: $response,
+                mappedData: $targetData,
             );
 
         $this->processService->log(
             $process,
             SyncProcessMessage::TARGET_MAPPING_SAVED,
             [
-                'target_id' => $response->id,
+                'source_identity' => $identity->values(),
+                'target_identity' => $response->identity->values(),
                 'payload_hash' => $targetData->hash,
             ],
         );
@@ -64,15 +66,16 @@ class CreateTargetStage implements SyncStage
         $execution->context
             ->source
             ->saveTargetId(
-                $process->sourceId,
-                $response->id,
+                identity: $identity,
+                targetIdentity: $response->identity,
             );
 
         $this->processService->log(
             $process,
             SyncProcessMessage::TARGET_ID_SENT_TO_SOURCE,
             [
-                'target_id' => $response->id,
+                'source_identity' => $identity->values(),
+                'target_identity' => $response->identity->values(),
             ],
         );
 

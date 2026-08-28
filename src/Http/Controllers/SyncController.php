@@ -245,20 +245,23 @@ class SyncController extends Controller
     ) {
         abort_unless(
             Sync::has($context),
-            404
+            404,
         );
 
-        $request->validate([
-            'id' => 'required',
-            'force' => 'boolean',
+        $validated = $request->validate([
+            'source' => ['required'],
+            'force' => ['boolean'],
         ]);
+
+        $identity = Sync::identityResolver($context)
+            ->resolve($validated['source']);
 
         $this->startSyncHandler->handle(
             new StartSync(
                 context: $context,
-                sourceId: $request->integer('id'),
+                identity: $identity,
                 force: $request->boolean('force'),
-            )
+            ),
         );
 
         return response()->json([
@@ -270,29 +273,40 @@ class SyncController extends Controller
         Request $request,
         string $context,
     ) {
-
         abort_unless(
             Sync::has($context),
-            404
+            404,
         );
 
-        $request->validate([
-            'ids' => 'required|array',
-            'force' => 'boolean',
+        $validated = $request->validate([
+            'sources' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+            'sources.*' => [
+                'required',
+            ],
+            'force' => [
+                'boolean',
+            ],
         ]);
+
+        $identities = Sync::identityResolver($context)
+            ->resolveMany($validated['sources']);
 
         $this->startBatchSyncHandler->handle(
             new StartBatchSync(
                 context: $context,
-                ids: $request->ids,
+                identities: $identities,
                 force: $request->boolean('force'),
                 chunkSize: 100,
-            )
+            ),
         );
 
         return response()->json([
             'status' => 'queued',
-            'total' => count($request->ids),
+            'total' => count($identities),
         ]);
     }
 
@@ -306,7 +320,7 @@ class SyncController extends Controller
                 'error',
                 'obsolete',
             ],
-            true
+            true,
         );
     }
 }

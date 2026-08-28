@@ -28,9 +28,11 @@ final class StartMissingDependencyProcesses
 
         foreach ($event->dependencies as $dependency) {
 
+            $identity = $dependency->identity;
+
             $dependencyProcess = $this->finder->findReusableProcess(
                 context: $dependency->context,
-                sourceId: $dependency->sourceId,
+                identity: $identity,
             );
 
             $wasReused = $dependencyProcess !== null;
@@ -39,7 +41,7 @@ final class StartMissingDependencyProcesses
                 $dependencyProcess = $this->createProcess->handle(
                     new StartSync(
                         context: $dependency->context,
-                        sourceId: $dependency->sourceId,
+                        identity: $identity,
                         force: false,
                         parentProcess: $event->process,
                         relationType: SyncProcessRelationType::DEPENDENCY,
@@ -55,7 +57,7 @@ final class StartMissingDependencyProcesses
                 [
                     'parent_process_id' => $event->process->id,
                     'context' => $dependency->context,
-                    'source_id' => $dependency->sourceId,
+                    'source_identity' => $identity->values(),
                 ],
             );
 
@@ -63,7 +65,7 @@ final class StartMissingDependencyProcesses
                 process: $event->process,
                 dependencyProcess: $dependencyProcess,
                 context: $dependency->context,
-                sourceId: $dependency->sourceId,
+                sourceIdentity: $identity,
             );
 
             $this->logService->log(
@@ -73,7 +75,7 @@ final class StartMissingDependencyProcesses
                     'process_id' => $dependencyProcess->id,
                     'dependent_process_id' => $event->process->id,
                     'context' => $dependency->context,
-                    'source_id' => $dependency->sourceId,
+                    'source_identity' => $identity->values(),
                 ],
             );
 

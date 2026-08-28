@@ -13,9 +13,19 @@ return new class extends Migration
 
             /*
              * Identidade da sincronização
+             *
+             * source_key:
+             *   Representação canônica da identidade.
+             *   Usada para busca e unicidade lógica.
+             *
+             * source_identity:
+             *   Valores originais que compõem a identidade.
              */
             $table->string('context', 150);
-            $table->string('source_id');
+
+            $table->string('source_key', 500);
+
+            $table->json('source_identity');
 
             /*
              * Estado
@@ -58,7 +68,7 @@ return new class extends Migration
              * Identidade da sincronização.
              */
             $table->index(
-                ['context', 'source_id'],
+                ['context', 'source_key'],
                 'sync_processes_identity_index'
             );
 
@@ -66,7 +76,7 @@ return new class extends Migration
              * Busca de processos ativos.
              */
             $table->index(
-                ['context', 'source_id', 'status'],
+                ['context', 'source_key', 'status'],
                 'sync_processes_status_index'
             );
         });

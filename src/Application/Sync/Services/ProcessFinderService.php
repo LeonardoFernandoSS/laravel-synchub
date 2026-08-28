@@ -4,8 +4,9 @@ namespace Synchub\LaravelSynchub\Application\Sync\Services;
 
 use Synchub\LaravelSynchub\Domain\Sync\Contracts\SyncProcessRepository;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\SourceIdentity;
 
-class ProcessFinderService
+final class ProcessFinderService
 {
     public function __construct(
         protected SyncProcessRepository $repository,
@@ -23,11 +24,11 @@ class ProcessFinderService
 
     public function findReusableProcess(
         string $context,
-        mixed $sourceId,
+        SourceIdentity $identity,
     ): ?SyncProcessEntity {
         return $this->repository->findReusableProcess(
-            $context,
-            $sourceId,
+            context: $context,
+            identity: $identity,
         );
     }
 }

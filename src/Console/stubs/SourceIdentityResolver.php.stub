@@ -1,0 +1,25 @@
+<?php 
+
+namespace {{ namespace }}; 
+
+use Synchub\LaravelSynchub\Domain\Sync\Contracts\SourceIdentityResolver; 
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\SourceIdentity; 
+
+final class {{ name }}SourceIdentityResolver implements SourceIdentityResolver 
+{ 
+    public function resolve(mixed $source): SourceIdentity { 
+        throw new \LogicException( 'Implement {{ name }}SourceIdentityResolver::resolve().' ); 
+    } 
+    
+    /** 
+     * @param array<int, mixed> $sources 
+     * @return array<int, SourceIdentity> 
+     **/ 
+    
+    public function resolveMany(array $sources): array { 
+        return array_map( 
+            fn (mixed $source): SourceIdentity => $this->resolve($source), 
+            $sources, 
+        ); 
+    } 
+}

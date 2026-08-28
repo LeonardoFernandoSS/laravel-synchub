@@ -11,27 +11,48 @@ return new class extends Migration
         Schema::create('sync_mappings', function (Blueprint $table) {
             $table->id();
 
-            $table->string('source_type');
-            $table->string('source_id');
+            /*
+             * Identidade da origem
+             */
+            $table->string('source_type', 150);
+            $table->string('source_key', 500);
+            $table->json('source_identity');
 
-            $table->string('target_id');
+            /*
+             * Identidade do destino
+             */
+            $table->string('target_key', 500);
+            $table->json('target_identity');
 
+            /*
+             * Controle de alterações
+             */
             $table->string('payload_hash', 64);
+            $table->json('last_payload')->nullable();
 
             $table->timestamps();
 
+            /*
+             * Um mapping por identidade de origem.
+             */
             $table->unique(
-                ['source_type', 'source_id'],
-                'sync_mappings_source_target_unique'
+                ['source_type', 'source_key'],
+                'sync_mappings_source_identity_unique'
             );
 
+            /*
+             * Busca pelo destino.
+             */
             $table->index(
-                ['target_id'],
+                ['target_type', 'target_key'],
                 'sync_mappings_target_index'
             );
 
+            /*
+             * Busca pela origem.
+             */
             $table->index(
-                ['source_type', 'source_id'],
+                ['source_type', 'source_key'],
                 'sync_mappings_source_index'
             );
         });

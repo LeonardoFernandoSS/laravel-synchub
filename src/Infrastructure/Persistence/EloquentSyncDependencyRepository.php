@@ -7,6 +7,7 @@ use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncDependencyEntity;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus;
 use Synchub\LaravelSynchub\Domain\Sync\Models\SyncDependency;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\SourceIdentity;
 
 class EloquentSyncDependencyRepository implements SyncDependencyRepository
 {
@@ -14,14 +15,14 @@ class EloquentSyncDependencyRepository implements SyncDependencyRepository
         SyncProcessEntity $process,
         SyncProcessEntity $dependencyProcess,
         string $context,
-        mixed $sourceId
+        SourceIdentity $sourceIdentity
     ): SyncDependencyEntity {
 
         $dependency = SyncDependency::firstOrCreate(
             [
                 'sync_process_id' => $process->id,
                 'context' => $context,
-                'source_id' => $sourceId,
+                'source_key' => $sourceIdentity->key(),
             ],
             [
                 'depends_on_process_id' => $dependencyProcess->id,
@@ -86,7 +87,7 @@ class EloquentSyncDependencyRepository implements SyncDependencyRepository
             processId: $model->sync_process_id,
             dependsOnProcessId: $model->depends_on_process_id,
             context: $model->context,
-            sourceId: $model->source_id,
+            source_key: $model->source_key,
             resolved: $model->resolved,
             resolvedAt: $model->resolved_at,
         );

@@ -10,7 +10,7 @@ use RuntimeException;
 class MakeSynchubCommand extends Command
 {
     protected $signature = 'make:synchub
-        {type : Tipo do componente (context, mapper, validator, dependency, after-sync)}
+        {type : Tipo do componente (context, mapper, validator, dependency, after-sync, identity-resolver)}
         {name : Nome do componente}
         {--force : Sobrescreve arquivos existentes}';
 
@@ -22,6 +22,12 @@ class MakeSynchubCommand extends Command
                 'SyncContext.php',
                 'SourceGateway.php',
                 'TargetGateway.php',
+            ],
+        ],
+
+        'identity-resolver' => [
+            'templates' => [
+                'SourceIdentityResolver.php',
             ],
         ],
 

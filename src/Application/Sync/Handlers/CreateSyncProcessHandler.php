@@ -19,7 +19,7 @@ final class CreateSyncProcessHandler
     ): SyncProcessEntity {
         $process = $this->processService->start(
             context: $command->context,
-            sourceId: $command->sourceId,
+            identity: $command->identity,
             force: $command->force,
         );
 

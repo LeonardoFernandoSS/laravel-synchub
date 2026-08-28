@@ -11,18 +11,20 @@ final class StartBatchSyncHandler
     public function handle(
         StartBatchSync $command,
     ): void {
-        $idChunks = array_chunk(
-            $command->ids,
-            $command->chunkSize
+        $identityChunks = array_chunk(
+            $command->identities,
+            $command->chunkSize,
         );
 
-        $jobs = collect($idChunks)
-            ->map(fn (array $ids) => new ProcessBatchSync(
-                context: $command->context,
-                ids: $ids,
-                force: $command->force,
-                parentProcess: $command->parentProcess,
-            ))
+        $jobs = collect($identityChunks)
+            ->map(
+                fn(array $identities) => new ProcessBatchSync(
+                    context: $command->context,
+                    identities: $identities,
+                    force: $command->force,
+                    parentProcess: $command->parentProcess,
+                ),
+            )
             ->all();
 
         Bus::batch($jobs)

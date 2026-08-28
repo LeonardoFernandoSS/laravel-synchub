@@ -9,7 +9,7 @@ final readonly class StartBatchSync
 {
     public function __construct(
         public string $context,
-        public array $ids,
+        public array $identities,
         public bool $force = false,
         public int $chunkSize = 100,
         public ?SyncProcessEntity $parentProcess = null,

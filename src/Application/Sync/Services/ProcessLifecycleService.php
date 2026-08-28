@@ -13,6 +13,7 @@ use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessMessage;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStep;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\SourceIdentity;
 use Throwable;
 
 final class ProcessLifecycleService
@@ -38,7 +39,7 @@ final class ProcessLifecycleService
             [
                 'sync_process_id' => $process->id,
                 'context' => $process->context,
-                'source_id' => $process->sourceId,
+                'source_identity' => $process->sourceIdentity->values(),
                 'force' => $process->force,
             ],
         );
@@ -57,22 +58,22 @@ final class ProcessLifecycleService
      *
      * Novo:
      *
-     * PENDING → PROCESSING
+     * PENDING
      */
     public function start(
         string $context,
-        mixed $sourceId,
+        SourceIdentity $sourceIdentity,
         bool $force = false,
     ): SyncProcessEntity {
-        $process = DB::transaction(function () use (
+        return DB::transaction(function () use (
             $context,
-            $sourceId,
+            $sourceIdentity,
             $force,
         ): SyncProcessEntity {
             $activeProcesses = $this->processRepository
                 ->findActiveForUpdate(
                     context: $context,
-                    sourceId: $sourceId,
+                    identity: $sourceIdentity,
                 );
 
             foreach ($activeProcesses as $activeProcess) {
@@ -86,13 +87,12 @@ final class ProcessLifecycleService
 
             return $this->create([
                 'context' => $context,
-                'source_id' => $sourceId,
+                'source_identity' => $sourceIdentity->values(),
+                'source_key' => $sourceIdentity->key(),
                 'current_step' => SyncProcessStep::CREATED,
                 'force' => $force,
             ]);
         });
-
-        return $process;
     }
 
     public function rerun(
@@ -103,7 +103,7 @@ final class ProcessLifecycleService
             $activeProcesses = $this->processRepository
                 ->findActiveForUpdate(
                     context: $process->context,
-                    sourceId: $process->sourceId,
+                    identity: $process->sourceIdentity,
                 );
 
             foreach ($activeProcesses as $activeProcess) {
@@ -193,7 +193,7 @@ final class ProcessLifecycleService
             [
                 'sync_process_id' => $process->id,
                 'context' => $process->context,
-                'source_id' => $process->sourceId,
+                'source_identity' => $process->sourceIdentity->values(),
                 'force' => $process->force,
             ],
         );
@@ -300,7 +300,7 @@ final class ProcessLifecycleService
             [
                 'sync_process_id' => $process->id,
                 'context' => $process->context,
-                'source_id' => $process->sourceId,
+                'source_identity' => $process->sourceIdentity->values(),
                 ...$metadata,
             ],
         );
@@ -327,7 +327,7 @@ final class ProcessLifecycleService
             $process,
             SyncProcessMessage::WAITING_DEPENDENCIES,
             [
-                'dependencies' => $dependencies,
+                'dependencies' => array_map(fn($dependency) => $dependency->toArray(), $dependencies),
             ],
         );
 

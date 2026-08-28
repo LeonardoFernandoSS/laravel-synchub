@@ -4,6 +4,7 @@ namespace Synchub\LaravelSynchub\Domain\Sync\Contracts;
 
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncDependencyEntity;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\SourceIdentity;
 
 interface SyncDependencyRepository
 {
@@ -11,7 +12,7 @@ interface SyncDependencyRepository
         SyncProcessEntity $process,
         SyncProcessEntity $dependencyProcess,
         string $context,
-        mixed $sourceId
+        SourceIdentity $sourceIdentity
     ): SyncDependencyEntity;
 
     /**

@@ -9,9 +9,8 @@ use Synchub\LaravelSynchub\Domain\Sync\Contracts\SyncStage;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessMessage;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStep;
 use Synchub\LaravelSynchub\Domain\Sync\Exceptions\BusinessException;
-use Throwable;
 
-class LoadSourceDataStage implements SyncStage
+final class LoadSourceDataStage implements SyncStage
 {
     public function __construct(
         private SyncProcessService $processService,
@@ -28,10 +27,12 @@ class LoadSourceDataStage implements SyncStage
             SyncProcessStep::LOAD_SOURCE_DATA,
             SyncProcessMessage::LOADING_SOURCE_DATA,
             [
-                "id" => $process->sourceId,
-            ]
+                'source_identity' => $process
+                    ->sourceIdentity
+                    ->values(),
+            ],
         );
-        
+
         if ($this->processService->canReuseSourcePayload($process)) {
             $execution->sourcePayload = $process->sourcePayload;
 
@@ -49,10 +50,14 @@ class LoadSourceDataStage implements SyncStage
         $execution->sourcePayload = $execution
             ->context
             ->source
-            ->find($process->sourceId);
+            ->find(
+                $process->sourceIdentity,
+            );
 
         if (!$execution->sourcePayload) {
-            throw new BusinessException('Recurso não encontrado');
+            throw new BusinessException(
+                'Recurso não encontrado',
+            );
         }
 
         $this->processService->saveSourcePayload(

@@ -4,6 +4,7 @@ namespace Synchub\LaravelSynchub\Domain\Sync\Contracts;
 
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\SourceIdentity;
 
 interface SyncProcessRepository
 {
@@ -19,7 +20,7 @@ interface SyncProcessRepository
         SyncProcessStatus $from,
         SyncProcessStatus $to,
         array $data = [],
-    ): bool;    
+    ): bool;
 
     public function findOrFail(int $id): SyncProcessEntity;
 
@@ -30,11 +31,11 @@ interface SyncProcessRepository
      */
     public function findActiveForUpdate(
         string $context,
-        mixed $sourceId,
+        SourceIdentity $identity,
     ): array;
 
     public function findReusableProcess(
         string $context,
-        mixed $sourceId,
+        SourceIdentity $identity,
     ): ?SyncProcessEntity;
 }

@@ -30,12 +30,19 @@ final class SyncProcessRelationService
             $this->messageFor($type),
             [
                 'relation_type' => $type->value,
+
                 'parent_process_id' => $parent->id,
                 'parent_context' => $parent->context,
-                'parent_entity_id' => $parent->sourceId,
-                'child_process_id' => $child->id,                
+                'parent_source_identity' => $parent
+                    ->sourceIdentity
+                    ->values(),
+
+                'child_process_id' => $child->id,
+                'child_context' => $child->context,
+                'child_source_identity' => $child
+                    ->sourceIdentity
+                    ->values(),
             ],
-            
         );
     }
 
@@ -50,7 +57,7 @@ final class SyncProcessRelationService
             SyncProcessMessage::PROCESS_RELATION_RERUN,
 
             SyncProcessRelationType::DEPENDENCY =>
-                SyncProcessMessage::PROCESS_RELATION_DEPENDENCY,
+            SyncProcessMessage::PROCESS_RELATION_DEPENDENCY,
         };
     }
 }

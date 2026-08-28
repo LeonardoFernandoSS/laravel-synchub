@@ -2,22 +2,23 @@
 
 namespace Synchub\LaravelSynchub\Infrastructure\Persistence;
 
-use Synchub\LaravelSynchub\Domain\Sync\Entities\MappingEntity;
 use Synchub\LaravelSynchub\Domain\Sync\Contracts\MappingRepository;
-use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncResultData;
 use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncData;
+use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncResultData;
+use Synchub\LaravelSynchub\Domain\Sync\Entities\MappingEntity;
 use Synchub\LaravelSynchub\Domain\Sync\Models\SyncMapping;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\SourceIdentity;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\TargetIdentity;
 
-class EloquentMappingRepository implements MappingRepository
+final class EloquentMappingRepository implements MappingRepository
 {
-    public function findBySourceId(
-        string $sourceType,
-        mixed $sourceId,
+    public function find(
+        string $context,
+        SourceIdentity $identity,
     ): ?MappingEntity {
-
         $mapping = SyncMapping::query()
-            ->where('source_type', $sourceType)
-            ->where('source_id', $sourceId)
+            ->where('source_type', $context)
+            ->where('source_key', $identity->key())
             ->first();
 
         return $mapping
@@ -26,16 +27,19 @@ class EloquentMappingRepository implements MappingRepository
     }
 
     public function create(
-        string $sourceType,
-        mixed $sourceId,
+        string $context,
+        SourceIdentity $identity,
         SyncResultData $response,
         SyncData $mappedData,
     ): MappingEntity {
         $mapping = SyncMapping::create([
-            'source_type' => $sourceType,
-            'source_id' => $sourceId,
-            'target_id' => $response->id,
+            'source_type' => $context,
+            'source_key' => $identity->key(),
+            'source_identity' => $identity->values(),
+            'target_key' => $response->identity->key(),
+            'target_identity' => $response->identity,
             'payload_hash' => $mappedData->hash,
+            'last_payload' => $mappedData->payload
         ]);
 
         return $this->toEntity($mapping);
@@ -46,27 +50,36 @@ class EloquentMappingRepository implements MappingRepository
         SyncResultData $response,
         SyncData $mappedData,
     ): MappingEntity {
-
-        $mapping = SyncMapping::query()
+        $model = SyncMapping::query()
             ->where('source_type', $mapping->context)
-            ->where('source_id', $mapping->sourceId)
+            ->where(
+                'source_key',
+                $mapping->sourceIdentity->key(),
+            )
             ->firstOrFail();
 
-        $mapping->update([
-            'target_id' => $response->id,
+        $model->update([
+            'target_identity' => $response->identity,
             'payload_hash' => $mappedData->hash,
+            'last_payload' => $mappedData->payload,
         ]);
 
-        return $this->toEntity($mapping->fresh());
+        return $this->toEntity($model->fresh());
     }
 
-    private function toEntity(SyncMapping $model): MappingEntity
-    {
+    private function toEntity(
+        SyncMapping $model,
+    ): MappingEntity {
         return new MappingEntity(
             context: $model->source_type,
-            sourceId: $model->source_id,
-            targetId: $model->target_id,
+            sourceIdentity: SourceIdentity::from(
+                $model->source_identity,
+            ),
+            targetIdentity: $model->target_identity
+                ? TargetIdentity::from($model->target_identity)
+                : null,
             payloadHash: $model->payload_hash,
+            lastPayload: $model->last_payload,
         );
     }
 }

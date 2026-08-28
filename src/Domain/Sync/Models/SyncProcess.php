@@ -11,7 +11,9 @@ class SyncProcess extends Model
 {
     protected $fillable = [
         'context',
-        'source_id',
+
+        'source_key',
+        'source_identity',
 
         'force',
 
@@ -37,6 +39,8 @@ class SyncProcess extends Model
 
         'force' => 'boolean',
 
+        'source_identity' => 'array',
+
         'source_payload' => 'array',
         'target_payload' => 'array',
         'target_response' => 'array',
@@ -51,14 +55,14 @@ class SyncProcess extends Model
     public function logs(): HasMany
     {
         return $this->hasMany(
-            SyncLog::class
+            SyncLog::class,
         );
     }
 
     public function dependencies(): HasMany
     {
         return $this->hasMany(
-            SyncDependency::class
+            SyncDependency::class,
         );
     }
 
@@ -66,7 +70,7 @@ class SyncProcess extends Model
     {
         return $this->hasMany(
             SyncDependency::class,
-            'depends_on_process_id'
+            'depends_on_process_id',
         );
     }
 
@@ -74,7 +78,7 @@ class SyncProcess extends Model
     {
         return $this->hasMany(
             SyncProcessRelation::class,
-            'parent_process_id'
+            'parent_process_id',
         );
     }
 
@@ -82,7 +86,7 @@ class SyncProcess extends Model
     {
         return $this->hasMany(
             SyncProcessRelation::class,
-            'child_process_id'
+            'child_process_id',
         );
     }
 }

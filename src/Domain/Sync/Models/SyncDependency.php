@@ -17,7 +17,7 @@ class SyncDependency extends Model
 
         'context',
 
-        'source_id',
+        'source_key',
 
         'resolved',
 

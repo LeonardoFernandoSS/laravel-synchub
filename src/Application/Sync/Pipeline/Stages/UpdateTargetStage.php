@@ -10,7 +10,7 @@ use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncResultData;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessMessage;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStep;
 
-class UpdateTargetStage implements SyncStage
+final class UpdateTargetStage implements SyncStage
 {
     public function __construct(
         private SyncProcessService $processService,
@@ -24,12 +24,15 @@ class UpdateTargetStage implements SyncStage
         $mapping = $execution->mapping;
         $targetData = $execution->targetData;
 
+        $identity = $mapping->sourceIdentity;
+
         $this->processService->step(
             $process,
             SyncProcessStep::UPDATE_TARGET,
             SyncProcessMessage::TARGET_RECORD_UPDATING,
             [
-                'target_id' => $mapping->targetId,
+                'source_identity' => $identity->values(),
+                'target_identity' => $mapping->targetIdentity->values(),
                 'payload' => $targetData->payload,
                 'payload_hash' => $targetData->hash,
             ],
@@ -40,7 +43,7 @@ class UpdateTargetStage implements SyncStage
             $mapping->payloadHash === $targetData->hash
         ) {
             $execution->targetResponse = new SyncResultData(
-                $mapping->targetId,
+                $mapping->targetIdentity,
                 $process->targetResponse,
             );
 
@@ -48,7 +51,8 @@ class UpdateTargetStage implements SyncStage
                 $process,
                 SyncProcessMessage::SYNC_SKIPPED_NO_CHANGES,
                 [
-                    'target_id' => $mapping->targetId,
+                    'source_identity' => $identity->values(),
+                    'target_identity' => $mapping->targetIdentity->values(),
                     'payload_hash' => $targetData->hash,
                     'force' => false,
                 ],
@@ -61,7 +65,7 @@ class UpdateTargetStage implements SyncStage
             ->context
             ->target
             ->update(
-                $mapping,
+                $mapping->targetIdentity,
                 $targetData,
             );
 
@@ -76,8 +80,9 @@ class UpdateTargetStage implements SyncStage
             $process,
             SyncProcessMessage::TARGET_RESPONSE_SAVED,
             [
+                'source_identity' => $identity->values(),
                 'response' => $targetResponse->raw,
-                'target_id' => $targetResponse->id,
+                'target_identity' => $targetResponse->identity,
             ],
         );
 
@@ -94,7 +99,8 @@ class UpdateTargetStage implements SyncStage
             $process,
             SyncProcessMessage::TARGET_MAPPING_SAVED,
             [
-                'target_id' => $targetResponse->id,
+                'source_identity' => $identity->values(),
+                'target_identity' => $targetResponse->identity,
                 'payload_hash' => $targetData->hash,
             ],
         );

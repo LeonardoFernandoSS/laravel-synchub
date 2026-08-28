@@ -24,7 +24,7 @@ return new class extends Migration
 
             // Entidade que originou a dependência
             $table->string('context');
-            $table->string('source_id');
+            $table->string('source_key', 500);
 
             // Estado da dependência
             $table->boolean('resolved')->default(false);

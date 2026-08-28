@@ -9,7 +9,7 @@ use Synchub\LaravelSynchub\Domain\Sync\Contracts\SyncStage;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessMessage;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStep;
 
-class FindTargetMappingStage implements SyncStage
+final class FindTargetMappingStage implements SyncStage
 {
     public function __construct(
         private SyncProcessService $processService,
@@ -30,9 +30,9 @@ class FindTargetMappingStage implements SyncStage
         $execution->mapping = $execution
             ->context
             ->repository
-            ->findBySourceId(
-                $process->context,
-                $process->sourceId,
+            ->find(
+                context: $process->context,
+                identity: $process->sourceIdentity,
             );
 
         if ($execution->mapping === null) {
@@ -45,7 +45,7 @@ class FindTargetMappingStage implements SyncStage
                 $process,
                 SyncProcessMessage::TARGET_MAPPING_FOUND,
                 [
-                    'target_id' => $execution->mapping->targetId,
+                    'target_identity' => $execution->mapping->targetIdentity->values(),
                     'payload_hash' => $execution->mapping->payloadHash,
                 ],
             );

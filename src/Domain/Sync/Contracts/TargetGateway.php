@@ -5,6 +5,7 @@ namespace Synchub\LaravelSynchub\Domain\Sync\Contracts;
 use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncResultData;
 use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncData;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\MappingEntity;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\TargetIdentity;
 
 interface TargetGateway
 {
@@ -13,7 +14,7 @@ interface TargetGateway
     ): SyncResultData;
 
     public function update(
-        MappingEntity $mapping,
+        TargetIdentity $identity,
         SyncData $data
     ): SyncResultData;
 }
