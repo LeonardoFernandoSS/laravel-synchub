@@ -11,7 +11,7 @@ final class {{ name }}SyncDependencyChecker implements SyncDependencyChecker
      * @return SyncDependencyData[]
      */
     public function check(
-        array $sourcePayload
+        array $data
     ): array {
         return [];
     }

@@ -9,8 +9,11 @@ final class {{ name }}SyncValidator implements SyncValidator
     /**
      * @return array<string, string[]>
      */
-    public function validate(array $data): array
-    {
+    public function validate(
+        array $data, 
+        array $lastPayload
+    ): array {
+        
         return [];
     }
 }

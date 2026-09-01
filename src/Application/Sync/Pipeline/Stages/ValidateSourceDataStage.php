@@ -36,6 +36,7 @@ class ValidateSourceDataStage implements SyncStage
 
         $errors = $validator->validate(
             $execution->sourcePayload,
+            $execution->mapping->lastPayload
         );
 
         if (!empty($errors)) {

@@ -6,5 +6,5 @@ use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncData;
 
 interface SyncMapper
 {
-    public function map(array $sourcePayload, array $lastPayload): SyncData;
+    public function map(array $data, array $lastPayload): SyncData;
 }

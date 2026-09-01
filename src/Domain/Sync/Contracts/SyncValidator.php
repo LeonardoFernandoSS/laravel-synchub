@@ -7,5 +7,5 @@ interface SyncValidator
     /**
      * @return array $errors
      */
-    public function validate(array $entity): array;
+    public function validate(array $data, array $lastPayload): array;
 }

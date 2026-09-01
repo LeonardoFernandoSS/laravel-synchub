@@ -9,5 +9,5 @@ interface SyncDependencyChecker
     /**
      * @return SyncDependencyData[]
      */
-    public function check(array $sourcePayload): array;
+    public function check(array $data): array;
 }

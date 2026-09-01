@@ -45,8 +45,8 @@ class SyncWorkflow
                 ->through([
                     LoadSourceDataStage::class,
                     CheckDependenciesStage::class,
-                    ValidateSourceDataStage::class,
                     FindTargetMappingStage::class,
+                    ValidateSourceDataStage::class,
                     MapDataStage::class,                    
                     SynchronizeStage::class,
                     FinishProcessStage::class,
