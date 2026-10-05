@@ -18,17 +18,50 @@ final class StartBatchSyncHandler
 
         $jobs = collect($identityChunks)
             ->map(
-                fn(array $identities) => new ProcessBatchSync(
-                    context: $command->context,
-                    identities: $identities,
-                    force: $command->force,
-                    parentProcess: $command->parentProcess,
-                ),
+                fn (array $identities): ProcessBatchSync =>
+                    $this->createJob($command, $identities),
             )
             ->all();
 
         Bus::batch($jobs)
             ->name("Sync {$command->context}")
             ->dispatch();
+    }
+
+    private function createJob(
+        StartBatchSync $command,
+        array $identities,
+    ): ProcessBatchSync {
+        return new ProcessBatchSync(
+            context: $command->context,
+            identities: $identities,
+            force: $command->force,
+            sourcePayloads: $this->getSourcePayloads(
+                $command,
+                $identities,
+            ),
+            parentProcess: $command->parentProcess,
+        );
+    }
+
+    private function getSourcePayloads(
+        StartBatchSync $command,
+        array $identities,
+    ): array {
+        $sourcePayloads = [];
+
+        foreach ($identities as $identity) {
+            $sourceKey = $identity->key();
+
+            if (array_key_exists(
+                $sourceKey,
+                $command->sourcePayloads,
+            )) {
+                $sourcePayloads[$sourceKey] =
+                    $command->sourcePayloads[$sourceKey];
+            }
+        }
+
+        return $sourcePayloads;
     }
 }

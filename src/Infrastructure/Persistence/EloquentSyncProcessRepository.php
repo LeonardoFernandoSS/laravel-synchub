@@ -120,6 +120,7 @@ final class EloquentSyncProcessRepository implements SyncProcessRepository
             force: $model->force,
 
             sourcePayload: $model->source_payload ?? [],
+            sourcePayloadProvided: (bool) ($model->source_payload_provided ?? false),
             targetPayload: $model->target_payload ?? [],
             targetResponse: $model->target_response ?? [],
             error: $model->error ?? [],

@@ -250,6 +250,7 @@ class SyncController extends Controller
 
         $validated = $request->validate([
             'source' => ['required'],
+            'data' => ['sometimes', 'array'],
             'force' => ['boolean'],
         ]);
 
@@ -261,6 +262,7 @@ class SyncController extends Controller
                 context: $context,
                 identity: $identity,
                 force: $request->boolean('force'),
+                sourcePayload: $validated['data'] ?? null,
             ),
         );
 
@@ -287,6 +289,10 @@ class SyncController extends Controller
             'sources.*' => [
                 'required',
             ],
+            'data' => [
+                'sometimes',
+                'array',
+            ],
             'force' => [
                 'boolean',
             ],
@@ -301,6 +307,7 @@ class SyncController extends Controller
                 identities: $identities,
                 force: $request->boolean('force'),
                 chunkSize: 100,
+                sourcePayloads: $validated['data'] ?? [],
             ),
         );
 

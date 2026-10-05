@@ -33,6 +33,20 @@ final class LoadSourceDataStage implements SyncStage
             ],
         );
 
+        if ($this->processService->hasProvidedSourcePayload($process)) {
+            $execution->sourcePayload = $process->sourcePayload;
+
+            $this->processService->log(
+                $process,
+                SyncProcessMessage::SOURCE_DATA_PROVIDED,
+                [
+                    'payload' => $execution->sourcePayload,
+                ],
+            );
+
+            return $next($execution);
+        }
+
         if ($this->processService->canReuseSourcePayload($process)) {
             $execution->sourcePayload = $process->sourcePayload;
 

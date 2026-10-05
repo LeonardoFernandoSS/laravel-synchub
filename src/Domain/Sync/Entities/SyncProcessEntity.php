@@ -22,6 +22,8 @@ final class SyncProcessEntity
         public bool $force,
 
         public array $sourcePayload = [],
+        
+        public bool $sourcePayloadProvided = false,
 
         public array $targetPayload = [],
 

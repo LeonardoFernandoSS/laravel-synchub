@@ -26,11 +26,13 @@ final class SyncProcessService
         string $context,
         mixed $identity,
         bool $force = false,
+        ?array $sourcePayload = null,
     ): SyncProcessEntity {
         return $this->lifecycle->start(
             $context,
             $identity,
             $force,
+            $sourcePayload,
         );
     }
 
@@ -215,5 +217,11 @@ final class SyncProcessService
         SyncProcessEntity $process,
     ): bool {
         return $this->payload->canReuseSourcePayload($process);
+    }
+
+    public function hasProvidedSourcePayload(
+        SyncProcessEntity $process,
+    ): bool {
+        return $this->payload->hasProvidedSourcePayload($process);
     }
 }

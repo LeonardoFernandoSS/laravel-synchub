@@ -42,6 +42,7 @@ return new class extends Migration
              * Dados da sincronização
              */
             $table->json('source_payload')->nullable();
+            $table->boolean('source_payload_provided')->default(false);
             $table->json('target_payload')->nullable();
             $table->json('target_response')->nullable();
 

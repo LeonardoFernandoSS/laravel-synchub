@@ -21,6 +21,7 @@ class SyncProcess extends Model
         'current_step',
 
         'source_payload',
+        'source_payload_provided',
         'target_payload',
         'target_response',
 
@@ -42,6 +43,7 @@ class SyncProcess extends Model
         'source_identity' => 'array',
 
         'source_payload' => 'array',
+        'source_payload_provided' => 'boolean',
         'target_payload' => 'array',
         'target_response' => 'array',
         'error' => 'array',

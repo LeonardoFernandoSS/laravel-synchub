@@ -64,11 +64,13 @@ final class ProcessLifecycleService
         string $context,
         SourceIdentity $sourceIdentity,
         bool $force = false,
+        ?array $sourcePayload = null,
     ): SyncProcessEntity {
         return DB::transaction(function () use (
             $context,
             $sourceIdentity,
             $force,
+            $sourcePayload,
         ): SyncProcessEntity {
             $activeProcesses = $this->processRepository
                 ->findActiveForUpdate(
@@ -91,6 +93,10 @@ final class ProcessLifecycleService
                 'source_key' => $sourceIdentity->key(),
                 'current_step' => SyncProcessStep::CREATED,
                 'force' => $force,
+                'source_payload' => $sourcePayload ?? [],
+                'payload_cached_at' => $sourcePayload !== null
+                    ? now()
+                    : null,
             ]);
         });
     }

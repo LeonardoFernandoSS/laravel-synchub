@@ -92,6 +92,12 @@ class ProcessPayloadService
             > now()->subMinutes(config('synchub.source_payload.cache_minutes', 10))->getTimestamp();
     }
 
+    public function hasProvidedSourcePayload(
+        SyncProcessEntity $process,
+    ): bool {
+        return $process->sourcePayloadProvided;
+    }
+
     public function hasSourcePayload(
         SyncProcessEntity $process,
     ): bool {

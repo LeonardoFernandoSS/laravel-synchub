@@ -12,6 +12,7 @@ final readonly class StartSync
         public string $context,
         public SourceIdentity $identity,
         public bool $force = false,
+        public ?array $sourcePayload = null,
         public ?SyncProcessEntity $parentProcess = null,
         public ?SyncProcessRelationType $relationType = SyncProcessRelationType::TRIGGERED,
     ) {}

@@ -1,327 +1,759 @@
-# 🧠 Laravel Synchub: Synchronization Platform
-Laravel Synchub is a robust synchronization platform designed to streamline data synchronization across multiple sources. This platform provides a seamless way to manage synchronization processes, ensuring data consistency and integrity. With its modular architecture and extensive feature set, Laravel Synchub is an ideal solution for developers seeking to integrate synchronization capabilities into their applications.
+# laravel-synchub
 
-## 🚀 Features
-- **Modular Architecture**: Laravel Synchub features a modular design, allowing developers to easily extend and customize the platform to meet their specific needs.
-- **Synchronization Workflows**: The platform supports complex synchronization workflows, enabling developers to define custom workflows tailored to their application's requirements.
-- **Queue-Based Processing**: Laravel Synchub utilizes a queue-based processing system, ensuring efficient and scalable synchronization processing.
-- **Error Handling and Logging**: The platform provides robust error handling and logging mechanisms, enabling developers to monitor and troubleshoot synchronization processes effectively.
-- **Extensive Configuration Options**: Laravel Synchub offers a wide range of configuration options, allowing developers to fine-tune the platform to suit their specific use cases.
+A Laravel package for building and managing reliable data synchronization processes between your application and external services.
 
-## 🛠️ Tech Stack
-* **Laravel Framework**: Laravel Synchub is built on top of the Laravel framework, leveraging its robust features and extensive ecosystem.
-* **PHP**: The platform is written in PHP, ensuring seamless integration with existing PHP-based applications.
-* **MySQL**: Laravel Synchub supports MySQL as its primary database management system, providing reliable data storage and retrieval.
-* **Redis**: The platform utilizes Redis for queue-based processing, ensuring efficient and scalable synchronization processing.
-* **Laravel Queue**: Laravel Synchub leverages Laravel's built-in queue system, providing a robust and reliable way to manage synchronization processes.
+The package provides a structured synchronization pipeline with support for individual and batch synchronization, process tracking, dependencies, retries, logging, and optional initial source payloads.
 
-## 📦 Installation
-To install Laravel Synchub, follow these steps:
-1. **Clone the Repository**: Clone the Laravel Synchub repository using Git.
-2. **Install Dependencies**: Install the required dependencies using Composer.
-3. **Configure Environment Variables**: Configure the environment variables in the `.env` file.
-4. **Run Migrations**: Run the database migrations to create the necessary tables.
-5. **Publish Configuration Files**: Publish the configuration files using the `php artisan vendor:publish` command.
+## Features
 
-## 💻 Usage
+* **Individual synchronization** — Synchronize a single source entity.
+* **Batch synchronization** — Process multiple source entities using Laravel job batches.
+* **Optional initial payload** — Provide the source data when starting a synchronization and avoid an additional source lookup.
+* **Fallback source loading** — When no initial payload is provided, the package loads the source data through the configured `SourceGateway`.
+* **Process tracking** — Track synchronization status, current step, timestamps, payloads, responses, and errors.
+* **Retry and rerun support** — Failed and completed processes can be executed again when allowed.
+* **Dependencies** — Synchronizations can depend on other synchronization processes.
+* **Triggered processes** — A synchronization can trigger other synchronization processes.
+* **Logging** — Execution steps and relevant payloads can be recorded for monitoring and debugging.
+* **Extensible architecture** — Source and target integrations can be implemented through dedicated gateways and contracts.
 
-Laravel SyncHub provides multiple ways to work with synchronizations. You can trigger synchronization through HTTP controllers, application handlers, or Artisan commands, depending on your application's needs.
+## Installation
 
-### 1. Create a Synchronization Context
-
-Use the `make:synchub` Artisan command to generate the components required by a synchronization context.
+You can install the package via Composer:
 
 ```bash
-php artisan make:synchub context Customer
+composer require leonardofernandoss/laravel-synchub
 ```
 
-This generates the context and its gateways:
+### Configuration
 
-```text
+Publish the SyncHub configuration file:
+
+```bash
+php artisan vendor:publish --tag=laravel-synchub-config
+```
+
+This will create:
+
+```plaintext
+config/synchub.php
+```
+
+The configuration file allows you to customize the package behavior, including route configuration.
+
+### Migrations
+
+SyncHub automatically loads its migrations. No migration publishing is required. After installing the package, simply run:
+
+```bash
+php artisan migrate
+```
+
+### Dashboard Views
+
+SyncHub includes a web dashboard for monitoring synchronization processes, including status, logs, payloads, dependencies and related processes.
+
+The dashboard views are loaded automatically by the package. If you want to customize them, publish the views:
+
+```bash
+php artisan vendor:publish --tag=synchub-views
+```
+
+The views will be published to:
+
+```plaintext
+resources/views/vendor/synchub/
+```
+
+You can then customize the published Blade files without modifying the package source code.
+
+### Dashboard Routes
+
+The SyncHub web and API routes are loaded automatically by the package. Routes can be enabled or disabled through:
+
+```php
+'routes' => [
+    'enabled' => true,
+],
+```
+
+in `config/synchub.php`.
+
+When enabled, the package registers the routes required by the synchronization API and dashboard. No route publishing or manual route registration is required.
+
+### Dashboard Access
+
+After installation, migrations and configuration, the dashboard can be accessed through the route registered by SyncHub.
+
+For production applications, it is recommended to protect the dashboard with your application's authentication or authorization middleware.
+
+---
+
+## Artisan Commands
+
+SyncHub provides Artisan commands to generate synchronization contexts and their components.
+
+### Generate a complete synchronization context
+
+Create a complete synchronization context:
+
+```bash
+php artisan make:synchub-context User
+```
+
+This command generates the synchronization context and all of its main components. The generated structure is similar to:
+
+```plaintext
 app/
 └── Contexts/
-    └── Customer/
-        ├── CustomerSyncContext.php
-        ├── CustomerSourceGateway.php
-        └── CustomerTargetGateway.php
-```
-
-Additional components can be generated independently:
-
-```bash
-php artisan make:synchub mapper Customer
-php artisan make:synchub validator Customer
-php artisan make:synchub dependency Customer
-php artisan make:synchub after-sync Customer
+    └── User/
+        ├── UserSyncContext.php
+        ├── UserMapper.php
+        ├── UserValidator.php
+        ├── UserDependencyChecker.php
+        ├── UserAfterSyncHandler.php
+        ├── UserSourceGateway.php
+        └── UserTargetGateway.php
 ```
 
 The command also supports nested contexts:
 
 ```bash
-php artisan make:synchub context Orders/Customer
+php artisan make:synchub-context Sales/User
 ```
 
-Existing directories are reused, and existing files are preserved unless `--force` is provided.
+If files already exist, the command keeps the existing files by default. You can overwrite existing files using:
 
 ```bash
-php artisan make:synchub context Customer --force
+php artisan make:synchub-context User --force
 ```
 
-### 2. Trigger a Synchronization
+### Generate individual synchronization components
 
-#### HTTP
+Individual components can also be generated using:
 
-Laravel SyncHub provides HTTP endpoints through `SyncController`.
+```bash
+php artisan make:synchub {type} {name}
+```
 
-To synchronize a single entity:
+Available component types:
+* `context`
+* `identity-resolver`
+* `mapper`
+* `validator`
+* `dependency`
+* `after-sync`
 
-```http
-POST /synchub/{context}
+Examples:
+
+```bash
+php artisan make:synchub context User
+php artisan make:synchub identity-resolver User
+php artisan make:synchub mapper User
+php artisan make:synchub validator User
+php artisan make:synchub dependency User
+php artisan make:synchub after-sync User
+```
+
+Use `--force` to overwrite existing files:
+
+```bash
+php artisan make:synchub mapper User --force
+```
+
+---
+
+## Recommended Setup
+
+For a new synchronization, the simplest approach is to generate the complete context:
+
+```bash
+php artisan make:synchub-context User
+```
+
+Then implement the generated components according to the requirements of the integration. A typical context may contain:
+
+```plaintext
+app/
+└── Contexts/
+    └── User/
+        ├── UserSyncContext.php
+        ├── UserSourceGateway.php
+        ├── UserTargetGateway.php
+        ├── UserMapper.php
+        ├── UserValidator.php
+        ├── UserDependencyChecker.php
+        ├── UserAfterSyncHandler.php
+        └── UserSourceIdentityResolver.php
+```
+
+Not all components are required for every synchronization. A simple synchronization may only require:
+* `UserSyncContext`
+* `UserSourceGateway`
+* `UserTargetGateway`
+
+While a more complex integration may additionally use:
+* `UserSourceIdentityResolver`
+* `UserMapper`
+* `UserValidator`
+* `UserDependencyChecker`
+* `UserAfterSyncHandler`
+
+The generated classes are starting points. Their implementations should contain the application-specific integration logic for the source system, target system, validation, mapping, dependencies, and post-synchronization behavior.
+
+---
+
+## Concepts
+
+A synchronization is identified by a context and a source.
+* The **context** identifies the synchronization definition.
+* The **source** identifies the entity being synchronized.
+
+For example:
+
+```yaml
+context: users
+source: 123
+```
+
+The package resolves the source identity through the configured identity resolver and then executes the synchronization pipeline.
+
+---
+
+## Synchronization Contracts
+
+Each synchronization context is composed of a set of contracts that define how the source data is loaded, validated, mapped, sent to the target service, persisted, and optionally followed by additional actions.
+
+The main contracts available to a synchronization context are:
+* `SourceGateway`
+* `TargetGateway`
+* `MappingRepository`
+* `SyncMapper`
+* `SyncValidator`
+* `SyncDependencyChecker`
+* `AfterSyncHandler`
+
+Not every synchronization needs to implement all contracts. The `SyncMapper`, `SyncValidator`, `SyncDependencyChecker`, and `AfterSyncHandler` are optional.
+
+### SyncContext
+
+The `SyncContext` is the object that connects the synchronization implementation with the Synchub pipeline.
+
+```php
+use Synchub\LaravelSynchub\Domain\Sync\Context\SyncContext;
+
+final class CustomerSyncContext extends SyncContext
+{
+    public function __construct()
+    {
+        parent::__construct(
+            source: new CustomerSourceGateway(),
+            target: new CustomerTargetGateway(),
+            repository: new CustomerMappingRepository(),
+            mapper: new CustomerSyncMapper(),
+            validator: new CustomerSyncValidator(),
+        );
+    }
+}
+```
+
+The required dependencies are:
+
+```php
+public function __construct(
+    public SourceGateway $source,
+    public TargetGateway $target,
+    public MappingRepository $repository,
+    public ?SyncMapper $mapper = null,
+    public ?SyncValidator $validator = null,
+    public ?SyncDependencyChecker $dependencyChecker = null,
+    public ?AfterSyncHandler $afterSync = null,
+)
+```
+
+Therefore, a minimal synchronization requires:
+1. A `SourceGateway`
+2. A `TargetGateway`
+3. A `MappingRepository`
+
+The remaining contracts can be added according to the requirements of the synchronization.
+
+### SourceGateway
+
+The `SourceGateway` is responsible for retrieving the source data and storing the target identifier associated with the source entity.
+
+```php
+interface SourceGateway
+{
+    public function find(
+        SourceIdentity $identity,
+    ): ?array;
+
+    public function saveTargetId(
+        SourceIdentity $identity,
+        TargetIdentity $targetIdentity,
+    ): void;
+}
 ```
 
 Example:
 
-```bash
-curl -X POST /synchub/customer \
-    -H "Content-Type: application/json" \
-    -d '{"id": 123}'
+```php
+final class CustomerSourceGateway implements SourceGateway
+{
+    public function find(
+        SourceIdentity $identity,
+    ): ?array {
+        return Customer::query()
+            ->whereKey($identity->value())
+            ->first()?->toArray();
+    }
+
+    public function saveTargetId(
+        SourceIdentity $identity,
+        TargetIdentity $targetIdentity,
+    ): void {
+        Customer::query()
+            ->whereKey($identity->value())
+            ->update([
+                'target_id' => $targetIdentity->value(),
+            ]);
+    }
+}
 ```
 
-To synchronize multiple entities:
+#### Initial source payload
+
+The source lookup is optional when the synchronization is started with an initial payload. For example:
+
+```json
+{
+    "source": 123,
+    "data": {
+        "id": 123,
+        "name": "John",
+        "email": "john@example.com"
+    }
+}
+```
+
+When data is provided, the synchronization can use this payload instead of calling `$sourceGateway->find($identity);`. When no initial payload is provided, the existing source loading flow is used.
+
+### TargetGateway
+
+The `TargetGateway` is responsible for creating or updating the entity in the external target system.
+
+```php
+interface TargetGateway
+{
+    public function create(
+        SyncData $data
+    ): SyncResultData;
+
+    public function update(
+        TargetIdentity $identity,
+        SyncData $data
+    ): SyncResultData;
+}
+```
+
+The gateway provides two operations:
+* `create()` — creates a new entity in the target system.
+* `update()` — updates an existing entity using its `TargetIdentity`.
+
+Example:
+
+```php
+final class CustomerTargetGateway implements TargetGateway
+{
+    public function create(
+        SyncData $data
+    ): SyncResultData {
+        $response = Http::post(
+            'https://api.example.com/customers',
+            $data->toArray(),
+        );
+
+        return SyncResultData::fromResponse(
+            $response->json(),
+        );
+    }
+
+    public function update(
+        TargetIdentity $identity,
+        SyncData $data
+    ): SyncResultData {
+        $response = Http::put(
+            "https://api.example.com/customers/{$identity->value()}",
+            $data->toArray(),
+        );
+
+        return SyncResultData::fromResponse(
+            $response->json(),
+        );
+    }
+}
+```
+
+### MappingRepository
+
+The `MappingRepository` stores the relationship between the source entity and the corresponding target entity.
+
+```php
+interface MappingRepository
+{
+    public function find(
+        string $context,
+        SourceIdentity $identity,
+    ): ?MappingEntity;
+
+    public function create(
+        string $context,
+        SourceIdentity $identity,
+        SyncResultData $response,
+        SyncData $mappedData,
+    ): MappingEntity;
+
+    public function update(
+        MappingEntity $mapping,
+        SyncResultData $response,
+        SyncData $mappedData,
+    ): MappingEntity;
+}
+```
+
+Conceptually:
+
+```plaintext
+Source Identity
+    │
+    ▼
+MappingRepository
+    │
+    ├── No mapping ──► TargetGateway::create()
+    │
+    └── Mapping exists ──► TargetGateway::update()
+```
+
+### SyncMapper
+
+The `SyncMapper` transforms source data into the structure expected by the target system.
+
+```php
+interface SyncMapper
+{
+    public function map(
+        array $data,
+        array $lastPayload,
+    ): SyncData;
+}
+```
+
+Example:
+
+```php
+final class CustomerSyncMapper implements SyncMapper
+{
+    public function map(
+        array $data,
+        array $lastPayload,
+    ): SyncData {
+        return new SyncData([
+            'name' => $data['name'],
+            'email' => $data['email'],
+        ]);
+    }
+}
+```
+
+The second argument, `$lastPayload`, contains the previous mapped payload when available, allowing the mapper to account for historical data.
+
+### SyncValidator
+
+The `SyncValidator` validates the source data before it continues through the synchronization pipeline.
+
+```php
+interface SyncValidator
+{
+    /**
+     * @return array $errors
+     */
+    public function validate(
+        array $data,
+        array $lastPayload,
+    ): array;
+}
+```
+
+Example:
+
+```php
+final class CustomerSyncValidator implements SyncValidator
+{
+    public function validate(
+        array $data,
+        array $lastPayload,
+    ): array {
+        $validator = Validator::make(
+            $data,
+            [
+                'name' => ['required', 'string'],
+                'email' => ['required', 'email'],
+            ],
+        );
+
+        return $validator->errors()->toArray();
+    }
+}
+```
+
+### SyncDependencyChecker
+
+The `SyncDependencyChecker` allows a synchronization to declare or resolve dependencies based on its source data.
+
+```php
+interface SyncDependencyChecker
+{
+    /**
+     * @return SyncDependencyData[]
+     */
+    public function check(array $data): array;
+}
+```
+
+This contract is optional and should be used when a synchronization cannot execute until another synchronization completes (e.g., a Product depending on its Category).
+
+### AfterSyncHandler
+
+The `AfterSyncHandler` allows application-specific logic to run after the synchronization pipeline completes. Unlike other contracts, it is an abstract class.
+
+```php
+abstract class AfterSyncHandler
+{
+    abstract public function handle(
+        SyncProcessEntity $process,
+    ): void;
+}
+```
+
+Example:
+
+```php
+final class CustomerAfterSyncHandler extends AfterSyncHandler
+{
+    public function handle(
+        SyncProcessEntity $process,
+    ): void {
+        event(
+            new CustomerSynchronized(
+                $process->sourceIdentity,
+            )
+        );
+    }
+}
+```
+
+### SourceIdentityResolver
+
+The `SourceIdentityResolver` converts the value received by the synchronization endpoint into a `SourceIdentity`.
+
+```php
+interface SourceIdentityResolver
+{
+    public function resolve(
+        mixed $source,
+    ): SourceIdentity;
+
+    /**
+     * @param array<mixed> $sources
+     * @return array<SourceIdentity>
+     */
+    public function resolveMany(
+        array $sources,
+    ): array;
+}
+```
+
+### Which Contracts Are Required?
+
+| Contract | Required | Purpose |
+| :--- | :--- | :--- |
+| `SourceGateway` | Yes | Load source data and save target identity |
+| `TargetGateway` | Yes | Create/update the target |
+| `MappingRepository` | Yes | Persist source/target mappings |
+| `SyncMapper` | No | Transform source data |
+| `SyncValidator` | No | Validate source data |
+| `SyncDependencyChecker` | No | Manage synchronization dependencies |
+| `AfterSyncHandler` | No | Execute post-synchronization logic |
+
+---
+
+## Complete Context Examples
+
+### Full Context (All contracts)
+
+```php
+final class CustomerSyncContext extends SyncContext
+{
+    public function __construct()
+    {
+        parent::__construct(
+            source: new CustomerSourceGateway(),
+            target: new CustomerTargetGateway(),
+            repository: new CustomerMappingRepository(),
+            mapper: new CustomerSyncMapper(),
+            validator: new CustomerSyncValidator(),
+            dependencyChecker: new CustomerDependencyChecker(),
+            afterSync: new CustomerAfterSyncHandler(),
+        );
+    }
+}
+```
+
+### Simple Context (Required contracts only)
+
+```php
+final class CustomerSyncContext extends SyncContext
+{
+    public function __construct()
+    {
+        parent::__construct(
+            source: new CustomerSourceGateway(),
+            target: new CustomerTargetGateway(),
+            repository: new CustomerMappingRepository(),
+        );
+    }
+}
+```
+
+---
+
+## Endpoints
+
+### Individual Synchronization
+
+An individual synchronization can be started through the synchronization endpoint:
+
+```http
+POST /synchub/{context}/sync
+```
+
+Example request body:
+
+```json
+{
+    "source": 123
+}
+```
+
+Providing the initial payload:
+
+```json
+{
+    "source": 123,
+    "data": {
+        "id": 123,
+        "name": "John",
+        "email": "john@example.com"
+    }
+}
+```
+
+Force synchronization:
+
+```json
+{
+    "source": 123,
+    "data": {
+        "id": 123,
+        "name": "John"
+    },
+    "force": true
+}
+```
+
+### Batch Synchronization
+
+Multiple source entities can be synchronized using the batch endpoint:
 
 ```http
 POST /synchub/{context}/batch
 ```
 
-Example:
-
-```bash
-curl -X POST /synchub/customer/batch \
-    -H "Content-Type: application/json" \
-    -d '{"ids":[123,456,789]}'
-```
-
-Both endpoints support the `force` option.
+Example request body:
 
 ```json
 {
-    "id": 123,
-    "force": true
+    "sources": [
+        123,
+        456,
+        789
+    ]
 }
 ```
 
-For batch synchronization:
+Initial payloads in batch synchronization:
 
 ```json
 {
-    "ids": [123, 456, 789],
-    "force": true
+    "sources": [
+        123,
+        456,
+        789
+    ],
+    "data": {
+        "123": {
+            "id": 123,
+            "name": "John"
+        },
+        "789": {
+            "id": 789,
+            "name": "Mary"
+        }
+    }
 }
 ```
 
-The synchronization is queued and the HTTP endpoint returns immediately:
+---
 
-```json
-{
-    "status": "queued"
-}
+## Synchronization Process & Monitoring
+
+Each synchronization creates a process that tracks its execution state (`pending`, `processing`, `waiting_dependency`, `success`, `failed`, `error`, `obsolete`), current step, initial payloads, target responses, errors, and execution duration.
+
+### Architecture
+
+```plaintext
+Request
+    ↓
+StartSync / StartBatchSync
+    ↓
+Create Sync Process
+    ↓
+Synchronization Pipeline
+    ↓
+Load Source Data (Payload or SourceGateway::find)
+    ↓
+SyncValidator
+    ↓
+SyncMapper
+    ↓
+MappingRepository (Check mapping)
+    ├── No mapping ──► TargetGateway::create()
+    └── Mapping exists ──► TargetGateway::update()
+    ↓
+Save Target Identity
+    ↓
+AfterSyncHandler
+    ↓
+Complete Process
 ```
 
-#### Application Handlers
+---
 
-Synchronizations can also be triggered directly through the application handlers. This is useful when the synchronization is started by another service, event, job, command, or internal application process.
+## Contributing
 
-For a single entity:
+Please read `CONTRIBUTING.md` for information about the contribution process and development guidelines.
 
-```php
-use Synchub\LaravelSynchub\Application\Sync\Commands\StartSync;
-use Synchub\LaravelSynchub\Application\Sync\Handlers\StartSyncHandler;
+## License
 
-$handler->handle(
-    new StartSync(
-        context: 'customer',
-        id: 123,
-        force: false,
-    )
-);
-```
-
-For batch synchronization:
-
-```php
-use Synchub\LaravelSynchub\Application\Sync\Commands\StartBatchSync;
-use Synchub\LaravelSynchub\Application\Sync\Handlers\StartBatchSyncHandler;
-
-$handler->handle(
-    new StartBatchSync(
-        context: 'customer',
-        ids: [123, 456, 789],
-        force: false,
-        chunkSize: 100,
-    )
-);
-```
-
-The handlers provide the same application-level entry point used by the HTTP controller, keeping the synchronization logic independent from the transport layer.
-
-### 3. Artisan Commands
-
-If your application exposes Artisan commands for triggering synchronizations, those commands should delegate to the same application handlers instead of implementing synchronization logic themselves.
-
-For example:
-
-```php
-$startSyncHandler->handle(
-    new StartSync(
-        context: $context,
-        id: $id,
-        force: $force,
-    )
-);
-```
-
-This keeps the architecture consistent:
-
-```text
-HTTP Controller ──┐
-                  │
-Artisan Command ──┼──> Command ──> Handler ──> Synchronization
-                  │
-Job / Event ──────┘
-```
-
-The `make:synchub` command is responsible for generating synchronization components; it does not execute a synchronization itself.
-
-### 4. Monitor Synchronization Processes
-
-Synchronization processes can be monitored through the HTTP endpoints provided by `SyncController`.
-
-List synchronization processes:
-
-```http
-GET /synchub
-```
-
-View a specific process:
-
-```http
-GET /synchub/{id}
-```
-
-Get the current process status and logs:
-
-```http
-GET /synchub/{id}/status
-```
-
-Rerun a completed or failed process:
-
-```http
-POST /synchub/{id}/rerun
-```
-
-The status endpoint returns information such as:
-
-```json
-{
-    "id": 123,
-    "status": "success",
-    "status_label": "Success",
-    "current_step": {
-        "value": "finished",
-        "label": "Finished"
-    },
-    "duration_seconds": 12,
-    "finished": true,
-    "logs": []
-}
-```
-
-### 5. Architecture
-
-The recommended flow is:
-
-```text
-                    ┌──────────────────┐
-                    │   HTTP Request   │
-                    └────────┬─────────┘
-                             │
-                    ┌────────▼─────────┐
-                    │  SyncController  │
-                    └────────┬─────────┘
-                             │
-                             │
-┌────────────────┐   ┌───────▼────────┐   ┌────────────────┐
-│ Artisan Command│──>│     Command    │<──│ Job / Event    │
-└────────────────┘   └───────┬────────┘   └────────────────┘
-                             │
-                    ┌────────▼─────────┐
-                    │      Handler     │
-                    └────────┬─────────┘
-                             │
-                    ┌────────▼─────────┐
-                    │   SyncContext    │
-                    └────────┬─────────┘
-                             │
-          ┌──────────────────┼──────────────────┐
-          │                  │                  │
-          ▼                  ▼                  ▼
- SourceGateway          SyncMapper        SyncValidator
-          │                  │                  │
-          └──────────────────┼──────────────────┘
-                             │
-                             ▼
-                     TargetGateway
-                             │
-                             ▼
-                    AfterSyncHandler
-```
-
-This structure allows the synchronization flow to be reused regardless of how it is triggered.
-
-
-## 📂 Project Structure
-```markdown
-laravel-synchub/
-├── config/
-│   ├── synchub.php
-│   └── ...
-├── src/
-│   ├── Application/
-│   │   ├── Sync/
-│   │   │   ├── Pipeline/
-│   │   │   │   ├── SyncWorkflowFactory.php
-│   │   │   │   ├── SyncWorkflow.php
-│   │   │   └── ...
-│   │   ├── Sync/
-│   │   │   ├── Services/
-│   │   │   │   ├── SyncProcessService.php
-│   │   │   │   └── ...
-│   │   ├── Sync/
-│   │   │   ├── Jobs/
-│   │   │   │   ├── ProcessSync.php
-│   │   │   │   └── ...
-│   │   └── ...
-│   └── ...
-├── src/
-│   ├── Infrastructure/
-│   │   ├── Providers/
-│   │   │   ├── LaravelSynchubServiceProvider.php
-│   │   │   └── ...
-│   │   └── ...
-│   └── ...
-├── ...
-```
-
-## 🤝 Contributing
-To contribute to Laravel Synchub, please follow these steps:
-1. **Fork the Repository**: Fork the Laravel Synchub repository using Git.
-2. **Create a New Branch**: Create a new branch for your contribution.
-3. **Make Changes**: Make the necessary changes to the codebase.
-4. **Submit a Pull Request**: Submit a pull request with your changes.
-
-## 📝 License
-Laravel Synchub is licensed under the MIT License.
-
-## 📬 Contact
-For more information about Laravel Synchub, please contact us at [leonardo.fernando06@gmail.com](mailto:leonardo.fernando06@gmail.com).
+This project is licensed under the MIT License.

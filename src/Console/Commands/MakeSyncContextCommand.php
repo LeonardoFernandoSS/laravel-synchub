@@ -68,8 +68,8 @@ class MakeSyncContextCommand extends Command
             'AfterSyncHandler.php',
 
             // gateways
-            'InternalGateway.php',
-            'ExternalGateway.php',
+            'SourceGateway.php',
+            'TargetGateway.php',
 
         ];
 

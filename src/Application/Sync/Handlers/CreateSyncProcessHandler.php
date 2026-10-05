@@ -21,6 +21,7 @@ final class CreateSyncProcessHandler
             context: $command->context,
             identity: $command->identity,
             force: $command->force,
+            sourcePayload: $command->sourcePayload,
         );
 
         if (!$command->parentProcess) {

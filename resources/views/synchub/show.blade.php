@@ -205,13 +205,19 @@
 
         <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
             <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">
-                Cache Interno
+                Dados da Origem
             </span>
 
-            @if($process->source_payload)
+            @if($process->source_payload_provided)
+
+            <span class="inline-flex mt-2 items-center px-2 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400">
+                Payload fornecido na inicialização
+            </span>
+
+            @elseif($process->source_payload)
 
             <span class="inline-flex mt-2 items-center px-2 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
-                Disponível
+                Payload carregado da origem
             </span>
 
             @if($process->payload_cached_at)
