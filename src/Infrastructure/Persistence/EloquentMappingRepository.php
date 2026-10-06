@@ -37,7 +37,7 @@ final class EloquentMappingRepository implements MappingRepository
             'source_key' => $identity->key(),
             'source_identity' => $identity->values(),
             'target_key' => $response->identity->key(),
-            'target_identity' => $response->identity,
+            'target_identity' => $response->identity->values(),
             'payload_hash' => $mappedData->hash,
             'last_payload' => $mappedData->payload
         ]);
@@ -59,7 +59,8 @@ final class EloquentMappingRepository implements MappingRepository
             ->firstOrFail();
 
         $model->update([
-            'target_identity' => $response->identity,
+            'target_key' => $response->identity->key(),
+            'target_identity' => $response->identity->values(),
             'payload_hash' => $mappedData->hash,
             'last_payload' => $mappedData->payload,
         ]);

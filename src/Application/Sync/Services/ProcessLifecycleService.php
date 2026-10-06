@@ -200,6 +200,7 @@ final class ProcessLifecycleService
                 'sync_process_id' => $process->id,
                 'context' => $process->context,
                 'source_identity' => $process->sourceIdentity->values(),
+                'source_payload_provided' => $process->sourcePayloadProvided,
                 'force' => $process->force,
             ],
         );

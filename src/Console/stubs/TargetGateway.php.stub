@@ -5,7 +5,7 @@ namespace {{ namespace }};
 use Synchub\LaravelSynchub\Domain\Sync\Contracts\TargetGateway;
 use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncData;
 use Synchub\LaravelSynchub\Domain\Sync\DTO\SyncResultData;
-use Synchub\LaravelSynchub\Domain\Sync\Entities\MappingEntity;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\TargetIdentity;
 
 final class {{ name }}TargetGateway implements TargetGateway
 {
@@ -18,7 +18,7 @@ final class {{ name }}TargetGateway implements TargetGateway
     }
 
     public function update(
-        MappingEntity $mapping,
+        TargetIdentity $identity,
         SyncData $data
     ): SyncResultData {
         throw new \LogicException(

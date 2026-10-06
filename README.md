@@ -17,6 +17,8 @@ The package provides a structured synchronization pipeline with support for indi
 * **Logging** — Execution steps and relevant payloads can be recorded for monitoring and debugging.
 * **Extensible architecture** — Source and target integrations can be implemented through dedicated gateways and contracts.
 
+---
+
 ## Installation
 
 You can install the package via Composer:
@@ -89,43 +91,171 @@ For production applications, it is recommended to protect the dashboard with you
 
 ---
 
+## Registering a Sync Context
+
+Before executing a synchronization, you must register the context in the SyncHub registry.
+The registration creates the relationship between the identifier used by the synchronization entry point and the corresponding `SyncContext` and `SourceIdentityResolver` classes.
+
+### Overview Flow
+
+```plaintext
+1. Create the context
+       ↓
+2. Register the context
+       ↓
+3. Use the identifier
+       ↓
+4. Start synchronization
+```
+
+### 1. Generate a Context
+
+Use the `make:synchub-context` command with the `--identifier` option:
+
+```bash
+php artisan make:synchub-context Customer --identifier=customers
+```
+
+This command creates the synchronization components for the `Customer` context in `app/Contexts/Customer/`:
+
+```plaintext
+app/Contexts/Customer/
+├── CustomerSyncContext.php
+├── CustomerSourceGateway.php
+├── CustomerTargetGateway.php
+├── CustomerSourceIdentityResolver.php
+├── CustomerSyncMapper.php
+├── CustomerSyncValidator.php
+├── CustomerSyncDependencyChecker.php
+└── CustomerAfterSyncHandler.php
+```
+
+The `--identifier` option defines the name (`customers`) that will be used to reference this context from routes, commands, jobs, or other synchronization entry points.
+
+```plaintext
+customers
+    ↓
+CustomerSyncContext
+    ↓
+Synchronization pipeline
+```
+
+### 2. Register the Context
+
+After creating the context, register it using the `Sync` facade:
+
+```php
+use Synchub\LaravelSynchub\Domain\Sync\Facades\Sync;
+use App\Contexts\Customer\CustomerSyncContext;
+use App\Contexts\Customer\CustomerSourceIdentityResolver;
+
+Sync::register(
+    'customers',
+    CustomerSyncContext::class,
+    CustomerSourceIdentityResolver::class,
+);
+```
+
+#### Arguments Breakdown
+
+| Argument | Description |
+| :--- | :--- |
+| `'customers'` | Unique identifier used to reference the synchronization context in endpoints and commands. |
+| `CustomerSyncContext::class` | Class responsible for defining the synchronization context and dependencies. |
+| `CustomerSourceIdentityResolver::class` | Class responsible for resolving the source entity identity. |
+
+### Context Identifier Resolution
+
+The identifier is the key used by SyncHub to resolve the registered context.
+
+When a route or command references `"customers"`, SyncHub internally resolves it through the registry:
+
+```plaintext
+"customers"
+     │
+     ▼
+SyncRegistry
+     │
+     ├── SyncContext
+     │      └── CustomerSyncContext
+     │
+     └── SourceIdentityResolver
+            └── CustomerSourceIdentityResolver
+```
+
+If the identifier has not been registered, SyncHub will throw an exception:
+
+```plaintext
+Sync context [customers] not registered.
+```
+
+### Where to Register
+
+Context registrations are stored **in-memory at runtime** (not persisted in a database or config file). Therefore, registrations must occur on **every application boot** before any synchronization is executed.
+
+A Service Provider is the recommended place for registration:
+
+```php
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use Synchub\LaravelSynchub\Domain\Sync\Facades\Sync;
+use App\Contexts\Customer\CustomerSyncContext;
+use App\Contexts\Customer\CustomerSourceIdentityResolver;
+
+class SyncServiceProvider extends ServiceProvider
+{
+    public function boot(): void
+    {
+        Sync::register(
+            'customers',
+            CustomerSyncContext::class,
+            CustomerSourceIdentityResolver::class,
+        );
+    }
+}
+```
+
+Once registered, the identifier can be used by your synchronization routes, commands, jobs, or other entry points:
+
+```plaintext
+route/command
+     │
+     │ "customers"
+     ▼
+SyncRegistry
+     │
+     ▼
+CustomerSyncContext
+     │
+     ▼
+Sync pipeline
+```
+
+---
+
 ## Artisan Commands
 
 SyncHub provides Artisan commands to generate synchronization contexts and their components.
 
 ### Generate a complete synchronization context
 
-Create a complete synchronization context:
+Create a complete synchronization context with an explicit identifier:
 
 ```bash
-php artisan make:synchub-context User
-```
-
-This command generates the synchronization context and all of its main components. The generated structure is similar to:
-
-```plaintext
-app/
-└── Contexts/
-    └── User/
-        ├── UserSyncContext.php
-        ├── UserMapper.php
-        ├── UserValidator.php
-        ├── UserDependencyChecker.php
-        ├── UserAfterSyncHandler.php
-        ├── UserSourceGateway.php
-        └── UserTargetGateway.php
+php artisan make:synchub-context Customer --identifier=customers
 ```
 
 The command also supports nested contexts:
 
 ```bash
-php artisan make:synchub-context Sales/User
+php artisan make:synchub-context Sales/Customer --identifier=customers
 ```
 
 If files already exist, the command keeps the existing files by default. You can overwrite existing files using:
 
 ```bash
-php artisan make:synchub-context User --force
+php artisan make:synchub-context Customer --identifier=customers --force
 ```
 
 ### Generate individual synchronization components
@@ -147,18 +277,18 @@ Available component types:
 Examples:
 
 ```bash
-php artisan make:synchub context User
-php artisan make:synchub identity-resolver User
-php artisan make:synchub mapper User
-php artisan make:synchub validator User
-php artisan make:synchub dependency User
-php artisan make:synchub after-sync User
+php artisan make:synchub context Customer
+php artisan make:synchub identity-resolver Customer
+php artisan make:synchub mapper Customer
+php artisan make:synchub validator Customer
+php artisan make:synchub dependency Customer
+php artisan make:synchub after-sync Customer
 ```
 
 Use `--force` to overwrite existing files:
 
 ```bash
-php artisan make:synchub mapper User --force
+php artisan make:synchub mapper Customer --force
 ```
 
 ---
@@ -168,7 +298,7 @@ php artisan make:synchub mapper User --force
 For a new synchronization, the simplest approach is to generate the complete context:
 
 ```bash
-php artisan make:synchub-context User
+php artisan make:synchub-context Customer --identifier=customers
 ```
 
 Then implement the generated components according to the requirements of the integration. A typical context may contain:
@@ -176,28 +306,28 @@ Then implement the generated components according to the requirements of the int
 ```plaintext
 app/
 └── Contexts/
-    └── User/
-        ├── UserSyncContext.php
-        ├── UserSourceGateway.php
-        ├── UserTargetGateway.php
-        ├── UserMapper.php
-        ├── UserValidator.php
-        ├── UserDependencyChecker.php
-        ├── UserAfterSyncHandler.php
-        └── UserSourceIdentityResolver.php
+    └── Customer/
+        ├── CustomerSyncContext.php
+        ├── CustomerSourceGateway.php
+        ├── CustomerTargetGateway.php
+        ├── CustomerMapper.php
+        ├── CustomerValidator.php
+        ├── CustomerDependencyChecker.php
+        ├── CustomerAfterSyncHandler.php
+        └── CustomerSourceIdentityResolver.php
 ```
 
 Not all components are required for every synchronization. A simple synchronization may only require:
-* `UserSyncContext`
-* `UserSourceGateway`
-* `UserTargetGateway`
+* `CustomerSyncContext`
+* `CustomerSourceGateway`
+* `CustomerTargetGateway`
 
 While a more complex integration may additionally use:
-* `UserSourceIdentityResolver`
-* `UserMapper`
-* `UserValidator`
-* `UserDependencyChecker`
-* `UserAfterSyncHandler`
+* `CustomerSourceIdentityResolver`
+* `CustomerMapper`
+* `CustomerValidator`
+* `CustomerDependencyChecker`
+* `CustomerAfterSyncHandler`
 
 The generated classes are starting points. Their implementations should contain the application-specific integration logic for the source system, target system, validation, mapping, dependencies, and post-synchronization behavior.
 
@@ -206,13 +336,13 @@ The generated classes are starting points. Their implementations should contain 
 ## Concepts
 
 A synchronization is identified by a context and a source.
-* The **context** identifies the synchronization definition.
+* The **context** (identifier) identifies the synchronization definition.
 * The **source** identifies the entity being synchronized.
 
 For example:
 
 ```yaml
-context: users
+context: customers
 source: 123
 ```
 
@@ -237,7 +367,7 @@ Not every synchronization needs to implement all contracts. The `SyncMapper`, `S
 
 ### SyncContext
 
-The `SyncContext` is the object that connects the synchronization implementation with the Synchub pipeline.
+The `SyncContext` is the object that connects the synchronization implementation with the SyncHub pipeline.
 
 ```php
 use Synchub\LaravelSynchub\Domain\Sync\Context\SyncContext;
@@ -574,58 +704,6 @@ interface SourceIdentityResolver
 }
 ```
 
-### Which Contracts Are Required?
-
-| Contract | Required | Purpose |
-| :--- | :--- | :--- |
-| `SourceGateway` | Yes | Load source data and save target identity |
-| `TargetGateway` | Yes | Create/update the target |
-| `MappingRepository` | Yes | Persist source/target mappings |
-| `SyncMapper` | No | Transform source data |
-| `SyncValidator` | No | Validate source data |
-| `SyncDependencyChecker` | No | Manage synchronization dependencies |
-| `AfterSyncHandler` | No | Execute post-synchronization logic |
-
----
-
-## Complete Context Examples
-
-### Full Context (All contracts)
-
-```php
-final class CustomerSyncContext extends SyncContext
-{
-    public function __construct()
-    {
-        parent::__construct(
-            source: new CustomerSourceGateway(),
-            target: new CustomerTargetGateway(),
-            repository: new CustomerMappingRepository(),
-            mapper: new CustomerSyncMapper(),
-            validator: new CustomerSyncValidator(),
-            dependencyChecker: new CustomerDependencyChecker(),
-            afterSync: new CustomerAfterSyncHandler(),
-        );
-    }
-}
-```
-
-### Simple Context (Required contracts only)
-
-```php
-final class CustomerSyncContext extends SyncContext
-{
-    public function __construct()
-    {
-        parent::__construct(
-            source: new CustomerSourceGateway(),
-            target: new CustomerTargetGateway(),
-            repository: new CustomerMappingRepository(),
-        );
-    }
-}
-```
-
 ---
 
 ## Endpoints
@@ -637,6 +715,8 @@ An individual synchronization can be started through the synchronization endpoin
 ```http
 POST /synchub/{context}/sync
 ```
+
+Where `{context}` is the registered identifier (e.g., `customers`).
 
 Example request body:
 
@@ -720,7 +800,7 @@ Initial payloads in batch synchronization:
 
 Each synchronization creates a process that tracks its execution state (`pending`, `processing`, `waiting_dependency`, `success`, `failed`, `error`, `obsolete`), current step, initial payloads, target responses, errors, and execution duration.
 
-### Architecture
+### Pipeline Architecture
 
 ```plaintext
 Request
