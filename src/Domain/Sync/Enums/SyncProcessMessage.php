@@ -64,6 +64,8 @@ enum SyncProcessMessage: string
 
     case LOADING_SOURCE_DATA = 'Carregando dados da origem.';
 
+    case SOURCE_DATA_PROVIDED = 'Dados fornecidos na solicitação.';
+
     case SOURCE_DATA_LOADED = 'Dados carregados da origem.';
 
     case SOURCE_PAYLOAD_LOADED_FROM_CACHE = 'Payload da origem recuperado do cache.';

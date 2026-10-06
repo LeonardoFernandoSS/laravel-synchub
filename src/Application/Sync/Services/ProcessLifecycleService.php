@@ -94,6 +94,7 @@ final class ProcessLifecycleService
                 'current_step' => SyncProcessStep::CREATED,
                 'force' => $force,
                 'source_payload' => $sourcePayload ?? [],
+                'source_payload_provided' => filled($sourcePayload),
                 'payload_cached_at' => $sourcePayload !== null
                     ? now()
                     : null,
