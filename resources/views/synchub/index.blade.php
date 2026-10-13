@@ -251,18 +251,17 @@
                 {{-- ID da entidade --}}
                 <div class="lg:col-span-2">
                     <label
-                        for="source_id"
+                        for="source_key"
                         class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
                         ID da entidade
                     </label>
 
                     <input
-                        type="number"
-                        id="source_id"
-                        name="source_id"
-                        value="{{ $sourceId }}"
-                        min="1"
-                        placeholder="Ex.: 123"
+                        type="text"
+                        id="source_key"
+                        name="source_key"
+                        value="{{ $sourceKey }}"
+                        placeholder="Ex.: context_123"
                         class="w-full rounded-lg border border-slate-200 dark:border-slate-700
                             bg-white dark:bg-slate-900
                             text-sm text-slate-700 dark:text-slate-200
@@ -284,7 +283,7 @@
                         Filtrar
                     </button>
 
-                    @if($status || $context || $step || $sourceId)
+                    @if($status || $context || $step || $sourceKey)
 
                     <a
                         href="{{ route('synchub.index') }}"
@@ -306,126 +305,190 @@
             </form>
         </div>
 
+        {{-- Sucesso --}}
+        @if(session()->has('success'))
         <div
-            id="bulk-actions"
-            class="hidden mb-4 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/50 rounded-xl px-4 py-3">
-
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-
-                <div class="text-sm text-indigo-700 dark:text-indigo-300">
-                    <span
-                        id="selected-count"
-                        class="font-bold">
-                        0
-                    </span>
-
-                    processos selecionados
-                </div>
-
-                <button
-                    type="button"
-                    id="bulk-rerun-button"
-                    class="inline-flex items-center justify-center px-4 py-2 rounded-lg
-                        bg-indigo-600 text-white text-sm font-semibold
-                        hover:bg-indigo-700
-                        disabled:opacity-50 disabled:cursor-not-allowed">
-
-                    Tentar novamente selecionados
-                </button>
-            </div>
+            role="status"
+            class="mb-4 rounded-lg border border-emerald-200
+            bg-emerald-50 px-4 py-3 text-sm text-emerald-800
+            dark:border-emerald-900 dark:bg-emerald-950/30
+            dark:text-emerald-300">
+            <div class="font-semibold">Operação concluída</div>
+            <p class="mt-1">{{ session('success') }}</p>
         </div>
+        @endif
 
-        @php
+        {{-- Erro de negócio --}}
+        @if(session()->has('error'))
+        <div
+            role="alert"
+            class="mb-4 rounded-lg border border-rose-200
+            bg-rose-50 px-4 py-3 text-sm text-rose-800
+            dark:border-rose-900 dark:bg-rose-950/30
+            dark:text-rose-300">
+            <div class="font-semibold">Não foi possível concluir a operação</div>
+            <p class="mt-1">{{ session('error') }}</p>
+        </div>
+        @endif
+
+        {{-- Erros de validação --}}
+        @if(isset($errors) && $errors->any())
+        <div
+            role="alert"
+            class="mb-4 rounded-lg border border-rose-200
+            bg-rose-50 px-4 py-3 text-sm text-rose-800
+            dark:border-rose-900 dark:bg-rose-950/30
+            dark:text-rose-300">
+            <div class="font-semibold">
+                Foram encontrados erros no formulário:
+            </div>
+
+            <ul class="mt-2 list-disc space-y-1 pl-5">
+                @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
+        <form
+            id="bulk-rerun-form"
+            method="POST"
+            action="{{ route('synchub.rerun.batch') }}">
+            @csrf
+
+            {{-- Preserva os filtros atuais --}}
+            @foreach(request()->only([
+            'status',
+            'context',
+            'step',
+            'source_key',
+            'page',
+            ]) as $key => $value)
+            @if($value !== null && $value !== '')
+            <input
+                type="hidden"
+                name="{{ $key }}"
+                value="{{ $value }}">
+            @endif
+            @endforeach
+
+            <div
+                id="bulk-actions"
+                class="hidden mb-4 bg-indigo-50 dark:bg-indigo-950/30
+                    border border-indigo-200 dark:border-indigo-900/50
+                    rounded-xl px-4 py-3">
+                <div class="flex flex-col sm:flex-row sm:items-center
+                    sm:justify-between gap-3">
+
+                    <div class="text-sm text-indigo-700 dark:text-indigo-300">
+                        <span id="selected-count" class="font-bold">0</span>
+                        processos selecionados
+                    </div>
+
+                    <button
+                        type="submit"
+                        id="bulk-rerun-button"
+                        class="inline-flex items-center justify-center px-4 py-2
+                            rounded-lg bg-indigo-600 text-white text-sm font-semibold
+                            hover:bg-indigo-700 disabled:opacity-50
+                            disabled:cursor-not-allowed"
+                        disabled>
+                        Tentar novamente selecionados
+                    </button>
+                </div>
+            </div>
+
+            @php
             $rerunnableStatuses = [
-                'success',
-                'failed',
-                'error',
-                'obsolete',
+            'success',
+            'failed',
+            'error',
+            'obsolete',
             ];
 
             $canRerun = in_array(
-                request()->query('status'),
-                $rerunnableStatuses,
-                true
+            request()->query('status'),
+            $rerunnableStatuses,
+            true
             );
-        @endphp
+            @endphp
 
-        {{-- Tabela --}}
-        <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            {{-- Tabela --}}
+            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left border-collapse">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left border-collapse">
 
-                    <thead class="bg-slate-50 dark:bg-slate-700/50 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
-                        <tr>
-                            @if($canRerun)
+                        <thead class="bg-slate-50 dark:bg-slate-700/50 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                            <tr>
+                                @if($canRerun)
                                 <th scope="col" class="px-4 py-4 w-12 text-center">
                                     <input
                                         type="checkbox"
                                         id="select-all"
                                         class="
-                                            peer
-                                            relative
-                                            appearance-none
-                                            w-5 h-5
-                                            rounded-md
-                                            border-2 border-slate-300
-                                            dark:border-slate-600
-                                            bg-white dark:bg-slate-800
-                                            cursor-pointer
-                                            transition-all duration-150
-                                            hover:border-indigo-400
-                                            hover:bg-indigo-50
-                                            dark:hover:border-indigo-500
-                                            dark:hover:bg-indigo-950/30
-                                            checked:bg-indigo-600
-                                            checked:border-indigo-600
-                                            focus:outline-none
-                                            focus:ring-2
-                                            focus:ring-indigo-500/30
-                                            focus:ring-offset-1
-                                            dark:focus:ring-offset-slate-800
-                                        "
-                                    >
+                                                peer
+                                                relative
+                                                appearance-none
+                                                w-5 h-5
+                                                rounded-md
+                                                border-2 border-slate-300
+                                                dark:border-slate-600
+                                                bg-white dark:bg-slate-800
+                                                cursor-pointer
+                                                transition-all duration-150
+                                                hover:border-indigo-400
+                                                hover:bg-indigo-50
+                                                dark:hover:border-indigo-500
+                                                dark:hover:bg-indigo-950/30
+                                                checked:bg-indigo-600
+                                                checked:border-indigo-600
+                                                focus:outline-none
+                                                focus:ring-2
+                                                focus:ring-indigo-500/30
+                                                focus:ring-offset-1
+                                                dark:focus:ring-offset-slate-800
+                                            ">
                                 </th>
-                            @endif
-                            <th scope="col" class="px-6 py-4 w-16">
-                                ID
-                            </th>
+                                @endif
+                                <th scope="col" class="px-6 py-4 w-16">
+                                    ID
+                                </th>
 
-                            <th scope="col" class="px-6 py-4">
-                                Tipo / Contexto
-                            </th>
+                                <th scope="col" class="px-6 py-4">
+                                    Tipo / Contexto
+                                </th>
 
-                            <th scope="col" class="px-6 py-4 w-32">
-                                Status
-                            </th>
+                                <th scope="col" class="px-6 py-4 w-32">
+                                    Status
+                                </th>
 
-                            <th scope="col" class="px-6 py-4 w-40">
-                                Etapa
-                            </th>
+                                <th scope="col" class="px-6 py-4 w-40">
+                                    Etapa
+                                </th>
 
-                            <th scope="col" class="px-6 py-4 w-28 text-center">
-                                Cache
-                            </th>
+                                <th scope="col" class="px-6 py-4 w-28 text-center">
+                                    Cache
+                                </th>
 
-                            <th scope="col" class="px-6 py-4 w-48">
-                                Iniciado Em
-                            </th>
+                                <th scope="col" class="px-6 py-4 w-48">
+                                    Iniciado Em
+                                </th>
 
-                            <th scope="col" class="px-6 py-4 w-28 text-right">
-                                Ações
-                            </th>
-                        </tr>
-                    </thead>
+                                <th scope="col" class="px-6 py-4 w-28 text-right">
+                                    Ações
+                                </th>
+                            </tr>
+                        </thead>
 
-                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700 font-medium">
+                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700 font-medium">
 
-                        @forelse($processes as $process)
+                            @forelse($processes as $process)
 
-                        <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-700/30 transition-colors">
+                            <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-700/30 transition-colors">
 
-                            @if($canRerun)
+                                @if($canRerun)
                                 <td class="px-4 py-4 text-center">
                                     @if(in_array($process->status?->value, [
                                     'success',
@@ -436,177 +499,177 @@
 
                                     <input
                                         type="checkbox"
-                                        name="process_ids[]"
+                                        name="ids[]"
                                         value="{{ $process->id }}"
                                         class="
-                                            process-checkbox
-                                            appearance-none
-                                            w-5 h-5
-                                            rounded-md
-                                            border-2 border-slate-300
-                                            dark:border-slate-600
-                                            bg-white dark:bg-slate-800
-                                            cursor-pointer
-                                            transition-all duration-150
-                                            hover:border-indigo-400
-                                            hover:bg-indigo-50
-                                            dark:hover:border-indigo-500
-                                            dark:hover:bg-indigo-950/30
-                                            checked:bg-indigo-600
-                                            checked:border-indigo-600
-                                            focus:outline-none
-                                            focus:ring-2
-                                            focus:ring-indigo-500/30
-                                            focus:ring-offset-1
-                                            dark:focus:ring-offset-slate-800
-                                        "
-                                    >
+                                                process-checkbox
+                                                appearance-none
+                                                w-5 h-5
+                                                rounded-md
+                                                border-2 border-slate-300
+                                                dark:border-slate-600
+                                                bg-white dark:bg-slate-800
+                                                cursor-pointer
+                                                transition-all duration-150
+                                                hover:border-indigo-400
+                                                hover:bg-indigo-50
+                                                dark:hover:border-indigo-500
+                                                dark:hover:bg-indigo-950/30
+                                                checked:bg-indigo-600
+                                                checked:border-indigo-600
+                                                focus:outline-none
+                                                focus:ring-2
+                                                focus:ring-indigo-500/30
+                                                focus:ring-offset-1
+                                                dark:focus:ring-offset-slate-800
+                                            ">
                                     @endif
                                 </td>
-                            @endif
+                                @endif
 
-                            {{-- ID --}}
-                            <td class="px-6 py-4 text-slate-400 dark:text-slate-500 font-mono">
-                                #{{ $process->id }}
-                            </td>
+                                {{-- ID --}}
+                                <td class="px-6 py-4 text-slate-400 dark:text-slate-500 font-mono">
+                                    #{{ $process->id }}
+                                </td>
 
-                            {{-- Tipo / Contexto --}}
-                            <td class="px-6 py-4">
-                                <div class="text-slate-900 dark:text-white font-semibold">
-                                    {{ $process->type }}
-                                </div>
+                                {{-- Tipo / Contexto --}}
+                                <td class="px-6 py-4">
+                                    <div class="text-slate-900 dark:text-white font-semibold">
+                                        {{ $process->type }}
+                                    </div>
 
-                                <div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                                    {{ $process->context }}
-                                    <span class="text-slate-300 dark:text-slate-600">
-                                        ·
+                                    <div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                                        {{ $process->context }}
+                                        <span class="text-slate-300 dark:text-slate-600">
+                                            ·
+                                        </span>
+                                        ID: {{ $process->source_key }}
+                                    </div>
+                                </td>
+
+                                {{-- Status --}}
+                                <td class="px-6 py-4">
+
+                                    @php
+                                    $statusClass = match ($process->status) {
+                                    \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::SUCCESS =>
+                                    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/60',
+
+                                    \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::ERROR,
+                                    \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::FAILED =>
+                                    'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/60',
+
+                                    \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::PROCESSING =>
+                                    'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/60',
+
+                                    \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::PENDING =>
+                                    'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800/60',
+
+                                    \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::WAITING_DEPENDENCY =>
+                                    'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-800/60',
+
+                                    \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::OBSOLETE =>
+                                    'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
+
+                                    default =>
+                                    'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
+                                    };
+                                    @endphp
+
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full border {{ $statusClass }}">
+
+                                        @if($process->status === \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::PROCESSING)
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                        @endif
+
+                                        {{ $process->status->label() }}
+
                                     </span>
-                                    ID: {{ $process->source_key }}
-                                </div>
-                            </td>
+                                </td>
 
-                            {{-- Status --}}
-                            <td class="px-6 py-4">
+                                {{-- Etapa --}}
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-mono rounded-md bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                                        {{ $process->current_step?->label() ?? '-' }}
+                                    </span>
+                                </td>
 
-                                @php
-                                $statusClass = match ($process->status) {
-                                \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::SUCCESS =>
-                                'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/60',
+                                {{-- Cache --}}
+                                <td class="px-6 py-4 text-center">
 
-                                \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::ERROR,
-                                \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::FAILED =>
-                                'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/60',
+                                    @if($process->source_payload)
 
-                                \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::PROCESSING =>
-                                'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/60',
+                                    <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+                                        Disponível
+                                    </span>
 
-                                \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::PENDING =>
-                                'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800/60',
+                                    @else
 
-                                \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::WAITING_DEPENDENCY =>
-                                'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-800/60',
+                                    <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                        -
+                                    </span>
 
-                                \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::OBSOLETE =>
-                                'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
-
-                                default =>
-                                'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
-                                };
-                                @endphp
-
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full border {{ $statusClass }}">
-
-                                    @if($process->status === \Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus::PROCESSING)
-                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                                     @endif
 
-                                    {{ $process->status->label() }}
+                                </td>
 
-                                </span>
-                            </td>
+                                {{-- Data --}}
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">
 
-                            {{-- Etapa --}}
-                            <td class="px-6 py-4 text-center">
-                                <span class="inline-flex items-center px-2 py-1 text-xs font-mono rounded-md bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                                    {{ $process->current_step?->label() ?? '-' }}
-                                </span>
-                            </td>
+                                    <div>
+                                        {{ $process->started_at?->format('d/m/Y H:i:s') ?? '-' }}
+                                    </div>
 
-                            {{-- Cache --}}
-                            <td class="px-6 py-4 text-center">
+                                    @if($process->finished_at && $process->started_at)
 
-                                @if($process->source_payload)
+                                    <div class="text-xs text-slate-400 mt-1">
+                                        {{ $process->finished_at->diffForHumans($process->started_at, true) }}
+                                    </div>
 
-                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
-                                    Disponível
-                                </span>
+                                    @endif
 
-                                @else
+                                </td>
 
-                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                                    -
-                                </span>
+                                {{-- Ações --}}
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
 
-                                @endif
+                                    <a
+                                        href="{{ route('synchub.show', $process->id) }}"
+                                        class="inline-flex items-center text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 hover:underline">
+                                        Ver Detalhes
+                                    </a>
 
-                            </td>
+                                </td>
 
-                            {{-- Data --}}
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">
+                            </tr>
 
-                                <div>
-                                    {{ $process->started_at?->format('d/m/Y H:i:s') ?? '-' }}
-                                </div>
+                            @empty
 
-                                @if($process->finished_at && $process->started_at)
+                            <tr>
+                                <td
+                                    colspan="7"
+                                    class="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
+                                    Nenhum processo de sincronização encontrado.
+                                </td>
+                            </tr>
 
-                                <div class="text-xs text-slate-400 mt-1">
-                                    {{ $process->finished_at->diffForHumans($process->started_at, true) }}
-                                </div>
+                            @endforelse
 
-                                @endif
+                        </tbody>
+                    </table>
+                </div>
 
-                            </td>
+                {{-- Paginação --}}
+                @if($processes->hasPages())
 
-                            {{-- Ações --}}
-                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                <div class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700">
+                    {{ $processes->links() }}
+                </div>
 
-                                <a
-                                    href="{{ route('synchub.show', $process->id) }}"
-                                    class="inline-flex items-center text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 hover:underline">
-                                    Ver Detalhes
-                                </a>
+                @endif
 
-                            </td>
-
-                        </tr>
-
-                        @empty
-
-                        <tr>
-                            <td
-                                colspan="7"
-                                class="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
-                                Nenhum processo de sincronização encontrado.
-                            </td>
-                        </tr>
-
-                        @endforelse
-
-                    </tbody>
-                </table>
             </div>
-
-            {{-- Paginação --}}
-            @if($processes->hasPages())
-
-            <div class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700">
-                {{ $processes->links() }}
-            </div>
-
-            @endif
-
-        </div>
+        </form>
     </div>
 
     <script>
@@ -619,6 +682,7 @@
         const bulkActions = document.getElementById('bulk-actions');
         const selectedCount = document.getElementById('selected-count');
         const bulkRerunButton = document.getElementById('bulk-rerun-button');
+        const bulkRerunForm = document.getElementById('bulk-rerun-form');
 
         function getSelectedIds() {
             return processCheckboxes
@@ -627,47 +691,27 @@
         }
 
         function updateBulkActions() {
-
-            const selectedIds = getSelectedIds();
-
-            const count = selectedIds.length;
+            const count = getSelectedIds().length;
 
             if (selectedCount) {
                 selectedCount.textContent = count;
             }
 
-            if (bulkActions) {
-
-                if (count > 0) {
-                    bulkActions.classList.remove('hidden');
-                } else {
-                    bulkActions.classList.add('hidden');
-                }
-            }
+            bulkActions?.classList.toggle('hidden', count === 0);
 
             if (bulkRerunButton) {
                 bulkRerunButton.disabled = count === 0;
             }
 
             if (selectAll) {
-
                 const total = processCheckboxes.length;
 
-                selectAll.checked =
-                    total > 0 &&
-                    count === total;
-
-                selectAll.indeterminate =
-                    count > 0 &&
-                    count < total;
+                selectAll.checked = total > 0 && count === total;
+                selectAll.indeterminate = count > 0 && count < total;
             }
         }
 
-        /*
-         * Selecionar todos
-         */
         selectAll?.addEventListener('change', function() {
-
             processCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
             });
@@ -675,26 +719,15 @@
             updateBulkActions();
         });
 
-        /*
-         * Seleção individual
-         */
         processCheckboxes.forEach(checkbox => {
-
-            checkbox.addEventListener(
-                'change',
-                updateBulkActions
-            );
-
+            checkbox.addEventListener('change', updateBulkActions);
         });
 
-        /*
-         * Rerun em lote
-         */
-        bulkRerunButton?.addEventListener('click', async function() {
-
+        bulkRerunForm?.addEventListener('submit', function(event) {
             const ids = getSelectedIds();
 
             if (ids.length === 0) {
+                event.preventDefault();
                 return;
             }
 
@@ -703,77 +736,13 @@
             );
 
             if (!confirmed) {
+                event.preventDefault();
                 return;
             }
 
-            bulkRerunButton.disabled = true;
-
-            const originalText =
-                bulkRerunButton.textContent;
-
-            bulkRerunButton.textContent =
-                'Iniciando...';
-
-            try {
-
-                const response = await fetch(
-                    @json(route('synchub.rerun.batch')), {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-
-                            'X-CSRF-TOKEN': document
-                                .querySelector('meta[name="csrf-token"]')
-                                ?.getAttribute('content'),
-                        },
-                        body: JSON.stringify({
-                            ids: ids,
-                        }),
-                    }
-                );
-
-                const data = await response.json();
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        data.message ??
-                        'Não foi possível executar o rerun.'
-                    );
-                }
-
-                /*
-                 * Limpa seleção
-                 */
-                processCheckboxes.forEach(
-                    checkbox => checkbox.checked = false
-                );
-
-                updateBulkActions();
-
-                /*
-                 * Atualiza a lista
-                 */
-                window.location.reload();
-
-            } catch (error) {
-
-                console.error(
-                    'Erro no rerun em lote:',
-                    error
-                );
-
-                alert(
-                    error.message ??
-                    'Erro ao tentar novamente os processos.'
-                );
-
-                bulkRerunButton.disabled = false;
-
-                bulkRerunButton.textContent =
-                    originalText;
+            if (bulkRerunButton) {
+                bulkRerunButton.disabled = true;
+                bulkRerunButton.textContent = 'Iniciando...';
             }
         });
 

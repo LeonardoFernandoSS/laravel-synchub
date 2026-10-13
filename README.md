@@ -24,7 +24,7 @@ The package provides a structured synchronization pipeline with support for indi
 You can install the package via Composer:
 
 ```bash
-composer require leonardofernandoss/laravel-synchub
+composer require synchub/laravel-synchub
 ```
 
 ### Configuration
