@@ -49,9 +49,20 @@ abstract readonly class SyncIdentity
      */
     public function key(): string
     {
+        $values = $this->values;
+
+        ksort($values, SORT_STRING);
+
         $parts = [];
 
-        foreach ($this->values as $key => $value) {
+        foreach ($values as $key => $value) {
+
+            dump([
+                'key' => $key,
+                'value' => $value,
+                'type' => get_debug_type($value),
+            ]);
+
             $parts[] = sprintf(
                 '%s=%s',
                 rawurlencode($key),

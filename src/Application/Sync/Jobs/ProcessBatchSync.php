@@ -23,6 +23,7 @@ final class ProcessBatchSync implements ShouldQueue
         public array $identities,
         public bool $force,
         public ?SyncProcessEntity $parentProcess = null,
+        public ?array $sourcePayloads = null,
     ) {}
 
     public function handle(
@@ -35,6 +36,7 @@ final class ProcessBatchSync implements ShouldQueue
                     identity: $identity,
                     force: $this->force,
                     parentProcess: $this->parentProcess,
+                    sourcePayload: $this->sourcePayloads[$identity->key()] ?? null,
                 ),
             );
         }
