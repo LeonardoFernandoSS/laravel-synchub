@@ -52,7 +52,11 @@ return [
     | Routes
     |--------------------------------------------------------------------------
     |
-    | Configurações das rotas disponibilizadas pelo SyncHub.
+    | Configure como as rotas do SyncHub serão registradas.
+    |
+    | A origem "package" utiliza os arquivos distribuídos pelo pacote.
+    | A origem "application" utiliza arquivos do projeto consumidor,
+    | permitindo personalizar middlewares, autenticação e endpoints.
     |
     */
 
@@ -63,21 +67,20 @@ return [
             true,
         ),
 
-        'prefix' => env(
-            'SYNCHUB_ROUTE_PREFIX',
-            'sync',
-        ),
-
         'api' => [
-            'enabled' => env(
-                'SYNCHUB_API_ROUTES_ENABLED',
-                true,
+            'enabled' => env('SYNCHUB_API_ROUTES_ENABLED', true),
+
+            'source' => env(
+                'SYNCHUB_API_ROUTES_SOURCE',
+                'application',
             ),
 
-            'prefix' => env(
-                'SYNCHUB_API_ROUTE_PREFIX',
-                'synchub',
+            'path' => env(
+                'SYNCHUB_API_ROUTES_PATH',
+                'routes/synchub-api.php',
             ),
+
+            'prefix' => env('SYNCHUB_API_ROUTE_PREFIX', 'synchub'),
 
             'middleware' => [
                 'api',
@@ -85,9 +88,16 @@ return [
         ],
 
         'web' => [
-            'enabled' => env(
-                'SYNCHUB_WEB_ROUTES_ENABLED',
-                true,
+            'enabled' => env('SYNCHUB_WEB_ROUTES_ENABLED', true),
+
+            'source' => env(
+                'SYNCHUB_WEB_ROUTES_SOURCE',
+                'application',
+            ),
+
+            'path' => env(
+                'SYNCHUB_WEB_ROUTES_PATH',
+                'routes/synchub-web.php',
             ),
 
             'middleware' => [
