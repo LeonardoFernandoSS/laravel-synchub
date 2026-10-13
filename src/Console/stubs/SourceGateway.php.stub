@@ -3,10 +3,12 @@
 namespace {{ namespace }};
 
 use Synchub\LaravelSynchub\Domain\Sync\Contracts\SourceGateway;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\SourceIdentity;
+use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\TargetIdentity;
 
 final class {{ name }}SourceGateway implements SourceGateway
 {
-    public function find(mixed $sourceId): array
+    public function find(SourceIdentity $identity): array
     {
         throw new \LogicException(
             'Implement {{ name }}SourceGateway::find().'
@@ -14,8 +16,8 @@ final class {{ name }}SourceGateway implements SourceGateway
     }
 
     public function saveTargetId(
-        mixed $sourceId,
-        mixed $targetId
+        SourceIdentity $identity,
+        TargetIdentity $targetIdentity,
     ): void {
         throw new \LogicException(
             'Implement {{ name }}SourceGateway::saveTargetId().'
