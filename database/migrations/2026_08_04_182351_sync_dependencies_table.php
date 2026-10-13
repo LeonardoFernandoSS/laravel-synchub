@@ -36,7 +36,7 @@ return new class extends Migration
                 [
                     'sync_process_id',
                     'context',
-                    'source_id',
+                    'source_key',
                 ],
                 'sync_dependencies_process_context_unique'
             );
