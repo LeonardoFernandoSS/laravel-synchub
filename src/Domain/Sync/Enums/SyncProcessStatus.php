@@ -44,39 +44,6 @@ enum SyncProcessStatus: string
         };
     }
 
-    // public function isActive(): bool
-    // {
-    //     return match ($this) {
-    //         self::PENDING,
-    //         self::PROCESSING,
-    //         self::WAITING_DEPENDENCY => true,
-
-    //         self::SUCCESS,
-    //         self::FAILED,
-    //         self::ERROR,
-    //         self::OBSOLETE => false,
-    //     };
-    // }
-
-    // public function isRunnable(): bool
-    // {
-    //     return match ($this) {
-    //         self::PENDING,
-    //         self::PROCESSING,
-    //         self::WAITING_DEPENDENCY => true,
-
-    //         self::SUCCESS,
-    //         self::FAILED,
-    //         self::ERROR,
-    //         self::OBSOLETE => false,
-    //     };
-    // }
-
-    // public function isTerminal(): bool
-    // {
-    //     return !$this->isActive();
-    // }
-
     public function label(): string
     {
         return match ($this) {

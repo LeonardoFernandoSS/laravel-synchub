@@ -5,7 +5,6 @@ namespace Synchub\LaravelSynchub\Infrastructure\Persistence;
 use Synchub\LaravelSynchub\Domain\Sync\Contracts\SyncProcessRepository;
 use Synchub\LaravelSynchub\Domain\Sync\Entities\SyncProcessEntity;
 use Synchub\LaravelSynchub\Domain\Sync\Enums\SyncProcessStatus;
-use Synchub\LaravelSynchub\Domain\Sync\Facades\Sync;
 use Synchub\LaravelSynchub\Domain\Sync\Models\SyncProcess;
 use Synchub\LaravelSynchub\Domain\Sync\ValueObjects\SourceIdentity;
 

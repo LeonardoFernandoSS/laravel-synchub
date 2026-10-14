@@ -57,12 +57,6 @@ abstract readonly class SyncIdentity
 
         foreach ($values as $key => $value) {
 
-            dump([
-                'key' => $key,
-                'value' => $value,
-                'type' => get_debug_type($value),
-            ]);
-
             $parts[] = sprintf(
                 '%s=%s',
                 rawurlencode($key),
